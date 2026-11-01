@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Case File: The Fifth Gate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<script>
+/* Load web fonts without blocking first paint (system fonts show instantly, then swap). */
+(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap';document.head.appendChild(l);})();
+</script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#181109;
+    --panel:#241a10;
+    --panel-2:#2f2214;
+    --paper:#ecdfba;
+    --paper-2:#e0cf9c;
+    --stamp:#8a1f1f;
+    --stamp-dark:#5e1414;
+    --gold:#bb9142;
+    --text:#ecdfc4;
+    --muted:#a89478;
+    --line:#4a3820;
+    --good:#5f7a45;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #3a2210 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, #2a0f0f 0%, transparent 55%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  h1,h2,h3,.serif{font-family:'Cinzel',serif;}
+  .mono{font-family:'Courier Prime',monospace;}
+  #app{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+  a{color:var(--gold);}
+  button{font-family:'Inter',sans-serif;cursor:pointer;}
+  ::selection{background:var(--gold);color:#1b1b1b;}
+
+  /* ---- Layout chrome ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .badge{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--stamp);border:2px solid #d8b978;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif;font-weight:800;color:#fff0da;font-size:18px;
+    transform:rotate(-6deg);
+    box-shadow:0 3px 0 rgba(0,0,0,.35);
+  }
+  .brand-text .k{font-size:11px;letter-spacing:.12em;color:var(--muted);}
+  .brand-text h1{font-size:20px;margin:0;color:var(--text);}
+  .pillbtn{
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    padding:8px 14px;border-radius:20px;font-size:13px;
+  }
+  .pillbtn:hover{border-color:var(--gold);color:var(--gold);}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;}
+  .card + .card{margin-top:16px;}
+
+  /* ---- Landing ---- */
+  .hero{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:40px 36px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 5px);
+    pointer-events:none;
+  }
+  .hero .tag{font-family:'Courier Prime',monospace;color:var(--gold);font-size:13px;letter-spacing:.04em;}
+  .hero h1{font-size:38px;margin:10px 0 12px;max-width:640px;line-height:1.15;}
+  .hero p{max-width:600px;color:var(--muted);font-size:15.5px;}
+  .role-row{display:flex;gap:16px;margin-top:26px;flex-wrap:wrap;}
+  .role-card{
+    flex:1;min-width:230px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:20px;text-align:left;color:var(--text);
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .role-card:hover{transform:translateY(-2px);border-color:var(--gold);}
+  .role-card h3{margin:0 0 6px;font-size:17px;}
+  .role-card p{margin:0;color:var(--muted);font-size:13.5px;}
+  .role-card .go{margin-top:14px;color:var(--gold);font-size:13px;font-weight:600;}
+
+  .steps-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;}
+  .steps-strip .s{
+    font-family:'Courier Prime',monospace;font-size:12px;color:var(--muted);
+    border:1px dashed var(--line);padding:6px 10px;border-radius:6px;
+  }
+
+  /* ---- Forms ---- */
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+  input[type=text],input[type=password],textarea{
+    width:100%;background:var(--ink);border:1px solid var(--line);border-radius:8px;
+    color:var(--text);padding:11px 12px;font-family:'Inter',sans-serif;font-size:14.5px;
+  }
+  textarea{resize:vertical;min-height:90px;font-family:'Courier Prime',monospace;line-height:1.5;}
+  input:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  .field{margin-bottom:16px;}
+  .btn{
+    background:var(--stamp);color:#fff0da;border:none;padding:12px 22px;border-radius:8px;
+    font-weight:600;font-size:14.5px;letter-spacing:.01em;
+  }
+  .btn:hover{background:var(--stamp-dark);}
+  .btn.secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
+  .btn.secondary:hover{border-color:var(--gold);color:var(--gold);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .err{color:#e08a76;font-size:13px;margin-top:8px;}
+
+  /* ---- Progress stepper ---- */
+  .stepper{display:flex;gap:4px;margin-bottom:22px;flex-wrap:wrap;}
+  .stepper .st{
+    flex:1;min-width:70px;text-align:center;padding:8px 4px;border-radius:6px;
+    font-size:11px;font-family:'Courier Prime',monospace;color:var(--muted);
+    border-bottom:3px solid var(--line);
+  }
+  .stepper .st.done{color:var(--good);border-bottom-color:var(--good);}
+  .stepper .st.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(201,162,75,.08);}
+
+  .case-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+  .case-header .stamp-tag{
+    background:var(--stamp);color:#fff0da;font-family:'Courier Prime',monospace;
+    font-size:11px;padding:4px 10px;border-radius:4px;transform:rotate(-2deg);display:inline-block;
+  }
+  .timer{
+    font-family:'Courier Prime',monospace;font-size:22px;background:var(--ink);
+    border:1px solid var(--line);border-radius:8px;padding:8px 16px;color:var(--gold);
+    min-width:100px;text-align:center;
+  }
+  .timer.low{color:#e08a76;border-color:#e08a76;}
+  .pillbtn.low{color:#e08a76;border-color:#e08a76;}
+
+  .briefing-paper{
+    background:var(--paper);color:#2a2416;border-radius:4px;padding:58px 28px 26px;margin-top:16px;
+    font-family:'Courier Prime',monospace;font-size:14.5px;line-height:1.7;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    position:relative;
+  }
+  .briefing-paper::after{
+    content:"CONFIDENTIAL";position:absolute;top:16px;right:20px;color:var(--stamp);
+    border:2px solid var(--stamp);padding:2px 10px;transform:rotate(6deg);font-weight:700;
+    font-size:12px;opacity:.55;
+  }
+
+  /* ---- Evidence grid ---- */
+  .evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:18px;}
+  .ev-card{
+    background:var(--paper);color:#2a2416;border-radius:3px;padding:16px;
+    font-size:13.5px;box-shadow:0 5px 14px rgba(0,0,0,.3);
+    border:2px solid transparent;transition:transform .12s ease, border-color .12s ease;
+    transform:rotate(var(--r,0deg));
+  }
+  .ev-card:hover{transform:rotate(0deg) translateY(-2px);}
+  .ev-card.open{border-color:var(--gold);transform:rotate(0deg) translateY(-2px);}
+  .ev-card.reviewed .tag{background:#3a3020;}
+  .ev-card .ev-head{cursor:pointer;}
+  .ev-card .tag{
+    display:inline-block;font-family:'Courier Prime',monospace;font-size:10.5px;
+    background:#2a2416;color:var(--paper);padding:2px 7px;border-radius:3px;margin-bottom:8px;
+  }
+  .ev-card .title{font-family:'Bitter',serif;font-weight:700;font-size:14.5px;margin-bottom:6px;}
+  .ev-card .body{font-family:'Courier Prime',monospace;font-size:12.5px;line-height:1.55;display:none;}
+  .ev-card.open .body{display:block;}
+  .ev-card .foot{margin-top:8px;font-size:11px;color:#6b6247;font-family:'Inter',sans-serif;}
+  .ev-classify{
+    display:flex;gap:8px;margin-top:12px;padding-top:12px;
+    border-top:1px dashed rgba(42,36,22,.3);flex-wrap:wrap;
+  }
+  .classify-btn{
+    flex:1;min-width:120px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+    padding:8px 10px;border-radius:6px;border:1.5px solid rgba(42,36,22,.35);
+    background:rgba(255,255,255,.35);color:#2a2416;cursor:pointer;transition:all .12s ease;
+  }
+  .classify-btn:hover{border-color:#2a2416;}
+  .classify-btn.relevant.active{background:var(--good);border-color:var(--good);color:#fff;}
+  .classify-btn.herring.active{background:var(--stamp);border-color:var(--stamp);color:#fff0da;}
+  .ev-card.twist{
+    background:linear-gradient(135deg,#2a1b1b,#3a2020);color:var(--text);border-color:var(--stamp);
+    animation:popin .35s ease;
+  }
+  .ev-card.twist .tag{background:var(--stamp);color:#fff0da;}
+  .ev-card.twist .body{color:#e9dccb;}
+  /* ---- case file (briefing page + in-room drawer) ---- */
+  .casefile{background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:18px 20px;margin:16px 0;}
+  .cf-h{font-family:'Courier Prime',monospace;font-size:12px;letter-spacing:.06em;color:var(--gold);text-transform:uppercase;margin:16px 0 8px;}
+  .cf-brief{font-size:14px;line-height:1.65;color:var(--text);}
+  .cf-mission{background:rgba(201,162,75,.10);border:1px solid rgba(201,162,75,.35);border-radius:8px;padding:12px 14px;font-size:14.5px;line-height:1.55;margin-top:14px;}
+  .cf-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}
+  .cf-num{background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;}
+  .cf-num .k{font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:3px;}
+  .cf-num .v{font-size:13.5px;line-height:1.45;}
+  .cf-flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .cf-step{font-family:'Courier Prime',monospace;font-size:12.5px;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 9px;}
+  .cf-arrow{color:var(--gold);font-weight:700;}
+  .cf-terms{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px;margin:0;font-size:13.5px;}
+  .cf-terms dt{font-weight:600;color:var(--text);}
+  .cf-terms dd{margin:0;color:var(--muted);line-height:1.45;}
+  .cf-judge{font-size:13.5px;color:var(--muted);line-height:1.6;margin:0;}
+  .cf-toggle{border-color:var(--gold) !important;color:var(--gold) !important;}
+  @media (max-width:560px){.cf-terms{grid-template-columns:1fr;gap:2px;}.cf-terms dd{margin-bottom:8px;}}
+  .twist-note{background:var(--panel-2);border:1px solid var(--line);border-left:4px solid var(--stamp);border-radius:8px;padding:14px 16px;margin:0 0 18px;font-size:14px;color:#e9dccb;}
+  @keyframes popin{from{opacity:0;transform:scale(.9) rotate(0deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+
+  .reviewed-badge{position:absolute;margin-top:-4px;}
+
+  /* ---- 5 whys ---- */
+  .why-chain{margin-top:16px;}
+  .why-item{display:flex;gap:14px;margin-bottom:14px;align-items:flex-start;}
+  .why-num{
+    font-family:'Bitter',serif;font-weight:800;font-size:20px;color:var(--gold);
+    width:40px;text-align:center;flex-shrink:0;padding-top:8px;
+  }
+  .why-item .field{flex:1;margin-bottom:0;}
+
+  /* ---- concept deck ---- */
+  .deck-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:10px;}
+  .deck-fan{display:flex;gap:-10px;position:relative;height:150px;width:100%;justify-content:center;}
+  .card-back{
+    width:96px;height:134px;background:linear-gradient(135deg,#2f2214,#241a10);
+    border:2px solid var(--gold);border-radius:8px;position:absolute;
+    display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:'Cinzel',serif;font-weight:700;
+    box-shadow:0 6px 16px rgba(0,0,0,.4);
+  }
+  .concept-result{
+    background:var(--paper);color:#2a2416;padding:22px 26px;border-radius:8px;max-width:420px;text-align:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  .concept-result h2{margin:0 0 6px;font-size:26px;}
+  .concept-result .sub{font-family:'Courier Prime',monospace;font-size:12.5px;color:#6b6247;margin-bottom:12px;}
+  .concept-result p{font-size:14px;line-height:1.6;}
+
+  /* ---- summary ---- */
+  .summary-block{margin-bottom:18px;}
+  .summary-block h3{font-size:14px;color:var(--gold);margin:0 0 8px;font-family:'Courier Prime',monospace;letter-spacing:.03em;}
+  .summary-block .content{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:14px;white-space:pre-wrap;}
+  .summary-block .content.empty{color:var(--muted);font-style:italic;}
+
+  /* ---- facilitator ---- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .badge-step{
+    font-family:'Courier Prime',monospace;font-size:11px;background:var(--panel-2);
+    border:1px solid var(--line);padding:3px 8px;border-radius:12px;color:var(--muted);
+  }
+  .score-pill{font-family:'Courier Prime',monospace;font-weight:700;color:var(--gold);}
+  .rubric-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;}
+  .rubric-item label{display:flex;justify-content:space-between;}
+  .rubric-item input[type=range]{width:100%;}
+  .herring-tag{font-size:10.5px;padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'Courier Prime',monospace;}
+  .herring-tag.yes{background:#4a2320;color:#e08a76;}
+  .herring-tag.no{background:#20342a;color:var(--good);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--panel-2);border:1px solid var(--gold);color:var(--text);
+    padding:10px 20px;border-radius:24px;font-size:13.5px;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  .muted{color:var(--muted);}
+  .small{font-size:12.5px;}
+  .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  hr.dash{border:none;border-top:1px dashed var(--line);margin:20px 0;}
+  @media (max-width:640px){
+    .hero h1{font-size:28px;}
+    .rubric-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   5 WHYS DETECTIVE — single-file app
+   Storage: artifact `db` capability (shared documents, so the facilitator
+   dashboard can see every participant's work)
+   ========================================================= */
+
+const FACILITATOR_PASSWORD = "Case5Whys!26"; // change this to reset the facilitator password
+
+/* =========================================================
+   LIVE SYNC VIA GITHUB (one-time setup)
+   Data lives as small JSON files in a GitHub repo; every browser reads/writes
+   them through the GitHub API, so the facilitator board updates within ~3 s.
+
+   1. Create a PRIVATE repo for the data, e.g. "fifth-gate-data" (add a README so the branch exists).
+   2. github.com -> Settings -> Developer settings -> Fine-grained tokens -> Generate:
+        Repository access: ONLY that data repo
+        Permissions: Contents = Read and write      (nothing else)
+   3. Fill GH_OWNER / GH_REPO below. Do NOT paste the token in this file if the file
+      goes in a public repo: open the page once as   https://YOU.github.io/REPO/#k=YOUR_TOKEN
+      (or use the facilitator's "Copy participant link" button) - the key is read from
+      the URL, stored in the browser and removed from the address bar.
+   4. Host this file with GitHub Pages (public repo -> Settings -> Pages -> main / root).
+   Until GH_OWNER/GH_REPO/key are set the app runs in LOCAL MODE (tabs of one browser only).
+   ========================================================= */
+const GH_OWNER  = "";            // your GitHub username or org
+const GH_REPO   = "";            // the (private) data repo
+const GH_BRANCH = "main";
+const GH_TOKEN  = "";            // optional; leave empty and use the #k= link instead
+const EVENT_ID  = "fifth-gate-1"; // change to start a fresh empty board
+
+// ---------- CASE LIBRARY (15 cases) ----------
+const CONCEPTS = [
+  {id:"vsm", name:"Value Stream Mapping (VSM)", blurb:"Map the end-to-end flow of material and information to expose delays, handoffs, and non-value-add steps between the root cause and the customer."},
+  {id:"pokayoke", name:"Poka-Yoke (Error Proofing)", blurb:"Design a mechanism, jig, or check that makes the specific error physically impossible or immediately obvious the moment it would occur."},
+  {id:"kaizen", name:"Kaizen (Continuous Improvement Event)", blurb:"Run a focused, small-team improvement sprint that tests a fast, low-cost countermeasure at the point of the defect and iterates on it."},
+  {id:"kanban", name:"Kanban (Pull & Visual Signal)", blurb:"Introduce a visual pull signal that controls handoffs, work-in-progress, or replenishment so problems surface immediately instead of piling up downstream."},
+  {id:"smed", name:"SMED (Single-Minute Exchange of Die)", blurb:"Separate and streamline changeover/setup steps so transitions between products, shifts, or configurations stop being a source of variation and error."},
+  {id:"5s", name:"5S (Workplace Organization)", blurb:"Sort, set in order, shine, standardize, and sustain the physical or digital workplace so the conditions that allowed the defect can't quietly persist."},
+  {id:"dmaic", name:"DMAIC (Six Sigma Problem-Solving Cycle)", blurb:"Define, Measure, Analyze, Improve and Control — use data to isolate the true driver of variation or defects, prove the fix experimentally, and lock it in with a control plan."},
+  {id:"standardwork", name:"Standard Work", blurb:"Document the current best-known method, sequence and timing for the task so the process stops depending on who is doing it and improvement has a baseline to build on."}
+];
+
+function ev(id,tag,title,text,herring){return {id,tag,title,text,herring:!!herring};}
+
+const CASES = [
+/* 1 */ {
+  title:"The Trim Panel That Waited Two Days",
+  industry:"Automotive Aftermarket Logistics (Spare Parts)",
+  briefing:"A mid-size automotive manufacturer's aftermarket logistics operation is fielding recurring complaints from dealers on three continents about delayed delivery of a door-trim replacement part. Customers waiting on repairs are leaving the shop empty-handed, and a few dealers have started sourcing panels from a competing aftermarket supplier. On paper the part's journey is six clean steps: warehouse pick, cross-dock, freight forwarder, customs, regional hub, dealer delivery. Tracking it in practice tells a different story. You have ten minutes in the evidence room; then the aftermarket director needs an answer.",
+  evidence:[
+    ev("E1","Ops/SCM — Freight Log","Regional hub dwell record","Tracking data shows the part sits idle for roughly two full days at the regional hub, waiting for outbound trailers to reach a fill threshold before a truck is released.",false),
+    ev("E2","Ops/SCM — Process Note","Cross-dock handling note","The part is unloaded, re-labelled and re-palletised at both the cross-dock and the regional hub — the same box is physically handled twice with no value added at either stop.",false),
+    ev("E3","Quality Log","Damage and returns record","Physical damage rates on this part are low and stable across the period, ruling out packaging or handling damage as the cause of delay.",true),
+    ev("E4","Customs / Documentation","Export paperwork queue log","Export documentation is compiled only after the part is picked, so shipments queue for customs clearance instead of clearing in parallel with picking.",false),
+    ev("E5","Marketing — Dealer Complaint","Dealer escalation transcript","Dealers report the part is 'promised in days and arrives in weeks,' and say the quoted lead time has never matched reality on this part number for at least a year.",false),
+    ev("E6","IT/WMS Log","Order tracking system audit","Each system segment tracks only its own leg. No single report exists showing total elapsed time from dealer order to dealer receipt across all six steps.",false),
+    ev("E7","HR/People — Warehouse Staffing","Pick shift roster","Warehouse headcount on the picking line has been stable for eighteen months and pick productivity is above target.",true),
+    ev("E8","Engineering","Part design change note","A minor cosmetic revision to the trim panel's clip design was released last year and has no bearing on how the part is shipped.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"Procurement has mapped the full door-to-door flow end to end for the first time. Of the total elapsed delivery time, the large majority is waiting, paperwork queuing and double-handling between hubs — actual transport and picking work account for only a small fraction. Nobody had ever seen the whole journey on one page before."},
+  facilitatorNotes:{
+    suggestedRootCause:"No one owns or measures the end-to-end replacement-part delivery stream; each function optimises its own leg, so waiting, duplicate handling and sequential paperwork accumulate invisibly between steps. (Documented fix: Value Stream Mapping plus an A3 report to expose and eliminate non-value-adding activity across the flow.)",
+    herringIds:["E3","E7","E8"]
+  },
+  source:"Fortuny-Santos, J. et al., Applied Sciences (MDPI), 2019 — https://www.mdpi.com/2076-3417/9/18/3932"
+},
+/* 2 */ {
+  title:"The Ninety-Minute Changeover",
+  industry:"Food Manufacturing (Packaged Snacks)",
+  briefing:"At a packaged-foods plant, switching the production line from a savory cracker to a sweet variant is officially budgeted at 45 minutes. In practice, changeovers regularly stretch past ninety, and twice in one quarter a late-afternoon changeover bled into paid overtime. Corporate has asked for higher throughput without adding a second production line. Nobody can say where the lost time actually goes. Find out before the capacity plan is signed off.",
+  evidence:[
+    ev("E1","Ops — Changeover Timing","Stopwatch study of one changeover","A timed observation shows operators spend a large block of the changeover walking to the tool crib and searching for the correct die, sealing plates and spanners — all while the line is stopped.",false),
+    ev("E2","Engineering","Setup parameter sheet","There is no documented setting sheet for the sweet variant. Temperature, pressure and speed are dialled in by trial and error, run a test batch, adjust, repeat, until the product looks right.",false),
+    ev("E3","Maintenance Log","Line reliability record","Unplanned breakdown hours on this line are low and trending down; the equipment itself is running reliably.",true),
+    ev("E4","HR/People — Shift Handover","Shift handover note","Handover notes show changeovers scheduled late in the shift frequently overrun into the next shift or into paid overtime, but no note ever records why.",false),
+    ev("E5","Ops — Preparation Practice","Pre-changeover checklist review","No parts, tools or materials are staged before the line stops. Every preparation task is performed as an internal activity while the machine is down.",false),
+    ev("E6","Quality Log","Post-changeover reject record","The first several trial batches after each changeover are scrapped as off-specification before the settings stabilise.",false),
+    ev("E7","Training Record","Operator certification record","All line operators hold current certification on the equipment and no certification has lapsed.",true),
+    ev("E8","Marketing — Demand Note","Promotional forecast","Marketing has forecast a promotional uplift on the sweet variant next quarter, which would require more frequent switching, not less.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A breakdown of a full changeover has been split into internal tasks (only possible with the line stopped) and external tasks (possible while the line is still running). More than half of the elapsed changeover time is external work — tool searching, staging, paperwork — being performed as if it were internal."},
+  facilitatorNotes:{
+    suggestedRootCause:"Changeover is treated as a single undifferentiated stoppage with no separation of internal from external setup work and no standardised setting sheet, so preparation and trial-and-error adjustment consume line availability. (Documented fix: SMED — separate internal and external activities and streamline the setup.)",
+    herringIds:["E3","E7","E8"]
+  },
+  source:"Optimising Changeover through Lean-Manufacturing Principles, Sustainability (MDPI), 2022 — https://www.mdpi.com/2071-1050/14/14/8279"
+},
+/* 3 */ {
+  title:"The Scrap Bin Nobody Could Explain",
+  industry:"Batch-Type Component Manufacturing",
+  briefing:"Inside a components plant producing parts in weekly batches, a high defect rate has crept into the numbers for one component, and rework is eating into shift output targets. The plant manager suspects the machine operators. The operators suspect a bad batch of raw material. Maintenance insists the tooling is fine. The end-of-line reports say what is wrong — but not where. Ten minutes in the evidence room, then you brief the plant manager.",
+  evidence:[
+    ev("E1","Quality Log","End-of-line inspection report","Defects are recorded only at final inspection, coded by defect type. No record identifies which of the twelve operations the part was at when the defect was created.",false),
+    ev("E2","Ops — Shop Floor Observation","Operation-by-operation walk note","A walk of the line found several defect modes are visibly present well before final inspection, meaning defective parts continue through remaining operations and accumulate added cost.",false),
+    ev("E3","Ops/SCM — Supplier Note","Incoming material certificate","Incoming raw material certificates for the batches in question are all within specification and consistent with prior lots.",true),
+    ev("E4","Maintenance Log","Tooling inspection record","Tooling wear measurements are within limits and the last tool change followed the scheduled interval.",true),
+    ev("E5","HR/People — Shift Handover","Operator handover note","Operators on different shifts each describe a different 'usual' method for the same operation, and none matches a written work instruction.",false),
+    ev("E6","Engineering","Work instruction file","The written method sheet for the component has not been revised in four years and does not reflect the current fixture setup on two operations.",false),
+    ev("E7","Training Record","Operator sign-off sheet","Operators are signed off as trained on the machine, but the sign-off does not cover defect identification or in-process checking at their own operation.",false),
+    ev("E8","Marketing — Customer Note","Customer order profile","The customer increased order volume this quarter, but batch sizes and run frequency are unchanged from previous quarters.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A defect log kept at every single operation for one full week is in. Defects are not spread evenly: the majority originate at two specific operations, and each has a distinct, traceable cause — neither of which is operator carelessness or raw material."},
+  facilitatorNotes:{
+    suggestedRootCause:"Defects are measured only at the end of the line, so there is no operation-level data to locate where each defect is created, and blame substitutes for root-cause analysis. (Documented fix: observe the method operation-by-operation, log defects per operation, and apply Root Cause Analysis to each defect type.)",
+    herringIds:["E3","E4","E8"]
+  },
+  source:"Case Study on Lean Manufacturing System Implementation in Batch Type Manufacturing Industry, ResearchGate, 2020"
+},
+/* 4 */ {
+  title:"Twenty Minutes to Travel Fifty Metres",
+  industry:"Healthcare — Diagnostic Imaging",
+  briefing:"At a regional hospital, moving a wheelchair-bound patient from the ward to the X-ray suite takes only a few minutes of actual travel. Yet the whole activity consistently consumes around twenty minutes per patient. Staff overtime is climbing, patients complain about being parked in corridors, and radiology's daily patient count is not budging even though nobody is working less hard. Something between 'ready for X-ray' and 'in the imaging room' is eating the appointment.",
+  evidence:[
+    ev("E1","Clinical Ops — Time Study","Activity breakdown of one transport","A stopwatch study of the full activity records about twenty minutes total, of which only a small portion is the patient actually moving or being imaged. The rest is locating a porter, finding a wheelchair, chart checks and queueing outside the suite.",false),
+    ev("E2","Ops — Equipment Note","Wheelchair availability audit","Wheelchairs are not assigned to wards or returned to a fixed point after use. Staff search multiple floors to find an available chair before each transport.",false),
+    ev("E3","HR/People — Porter Roster","Porter dispatch log","Porters are dispatched on an ad-hoc phone-call basis with no queueing or visual signal, so a request may wait several minutes before anyone is assigned.",false),
+    ev("E4","Quality/Clinical Log","Imaging equipment uptime","The X-ray equipment itself has high uptime with no unplanned outages in the study period.",true),
+    ev("E5","Patient Feedback","Patient complaint transcript","Patients describe being left waiting in a corridor 'already in the chair, just waiting,' and arriving at the scan visibly tired and anxious before it even begins.",false),
+    ev("E6","Ergonomics Review","Staff physical strain note","Transport staff report repeated bending, pushing on uneven thresholds and long corridor pushes, contributing to physical fatigue across a shift.",false),
+    ev("E7","Training Record","Radiographer certification log","Radiographer certifications are current and imaging technique compliance is high.",true),
+    ev("E8","IT/Clinical System Log","Appointment scheduling report","The scheduling system books imaging slots at even intervals and there is no evidence of double-booking or overbooking.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"The activity has now been split into value-added and non-value-added time. Of the roughly twenty minutes, around eighteen are non-value-added: searching, waiting, chart-checking, queueing. The imaging-related value-adding portion is only a couple of minutes."},
+  facilitatorNotes:{
+    suggestedRootCause:"The transport process has never been mapped as a flow, so preparation, equipment searching and dispatch waiting are treated as unavoidable background rather than removable non-value-added time. (Documented fix: a two-phase Lean Healthcare approach — survey and map to find root causes of waste, then apply targeted Lean tools integrated with ergonomics. Result: total activity time fell 72.2%, from 20 minutes to 7, with non-value-added time cut from 18 minutes to 5.)",
+    herringIds:["E4","E7","E8"]
+  },
+  source:"Lean Healthcare as a Tool for Improvement: A Case Study in a Clinical Laboratory, ResearchGate, 2017"
+},
+/* 5 */ {
+  title:"The Lean Rollout That Didn't Stick",
+  industry:"Healthcare — Public Hospital Emergency Department",
+  briefing:"A public university hospital's emergency department was overcrowded: packed corridors, exhausted nurses, patients waiting hours past triage. Government funding supported a formal 'Lean in Emergencies' programme. Consultants mapped processes, ran workshops and proposed new workflows. Eighteen months later the corridors are just as crowded, departmental staff turnover is higher than before, and several new procedures have quietly been abandoned. Your job is to work out why the improvement failed — not why the department was busy.",
+  evidence:[
+    ev("E1","Programme Governance","Project charter review","The programme was structured as an externally-led organisational redesign with a fixed end date. No internal owner was named to sustain the changes after the consultants left.",false),
+    ev("E2","HR/People — Staff Interviews","Nursing staff interview notes","Nurses report the new workflows were designed in workshops they could not attend because they could not leave the floor, and were then issued to them as instructions.",false),
+    ev("E3","Ops — Process Audit","Standard work compliance audit","Several redesigned procedures show near-total non-compliance within six months. Staff reverted to the previous method as soon as workload peaked.",false),
+    ev("E4","Facilities Log","Building maintenance record","Routine building maintenance was performed on schedule throughout the programme with no disruption to clinical areas.",true),
+    ev("E5","Patient Feedback","Patient complaint transcript","Patients report the same long waits after the programme as before, and say nothing visible about the department changed from their side.",false),
+    ev("E6","Finance","Programme expenditure report","Programme funds were fully spent within the grant period, largely on external facilitation and workshop delivery rather than on internal capability building.",false),
+    ev("E7","IT/Clinical System Log","Triage software version note","The triage software was upgraded during the same period, but the upgrade was routine and functionally equivalent to the prior version.",true),
+    ev("E8","Training Record","Lean training completion record","Attendance sheets show a small group of managers completed Lean training. No frontline clinical staff were trained in the method or in problem-solving.",false)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A post-implementation review has landed. It concludes the tools themselves were applied correctly — the failure was organisational and behavioural: no frontline ownership, no sustained leadership involvement after the funding window, and no mechanism to keep improving once the external team departed."},
+  facilitatorNotes:{
+    suggestedRootCause:"Lean was implemented as a funded, externally-led project rather than as a management system owned by the people doing the work, so no capability or ownership remained to sustain the changes. This case is documented as a lean failure precisely because it exposes organisational and behavioural barriers rather than tool-selection error.",
+    herringIds:["E4","E7"]
+  },
+  source:"Implementation of the Lean Healthcare System in the Emergency Room of the Clinical Hospital of the Federal University of Uberlândia, PMC/NCBI — https://pmc.ncbi.nlm.nih.gov/articles/PMC10743071/"
+},
+/* 6 */ {
+  title:"Five Hospitals, One Missing Playbook",
+  industry:"Healthcare — Multi-Hospital System",
+  briefing:"Five U.S. hospital systems, none coordinating with each other, are independently wrestling with the same frustration: rising costs, uneven quality of care, and no shared method for fixing either. Each has tried isolated improvement efforts — a new scheduling tool here, a staffing tweak there — but changes made in one department rarely survive once staff rotate or leadership moves on. A federal research agency has opened a file. Work out what these organisations actually have in common.",
+  evidence:[
+    ev("E1","Ops — Improvement Audit","Improvement initiative inventory","Each site runs improvement work as isolated departmental projects with no common method, no shared measures and no way to transfer a proven change between departments.",false),
+    ev("E2","HR/People — Leadership Note","Leadership continuity record","Several improvements were personally championed by a single manager. When that manager rotated or left, the change lapsed within months.",false),
+    ev("E3","Clinical Ops Log","Bed flow analysis","Patient flow bottlenecks recur at the same admission and discharge handoffs across all five organisations, but no site has mapped the flow end to end.",false),
+    ev("E4","Finance","Capital equipment register","Capital equipment purchases are current and comparable to peer institutions; equipment age is not a distinguishing factor between the sites.",true),
+    ev("E5","Patient Feedback","Patient experience survey","Patients describe inconsistent experiences between departments within the same hospital, suggesting variation in process rather than a single failing unit.",false),
+    ev("E6","Training Record","Improvement training record","Only a handful of staff at each site have any formal training in structured problem-solving; there is no internal capability to run improvement without external help.",false),
+    ev("E7","IT/Clinical System Log","EHR vendor note","All five organisations use different electronic health record vendors, and outcomes vary within each vendor group as much as between them.",true),
+    ev("E8","Marketing/Comms","Community reputation report","Local media coverage of each hospital is broadly neutral and does not correlate with the operational problems reported internally.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"The federal agency's cross-site synthesis is in. Sites that used a structured, repeatable improvement approach — rapid cycle improvement events, value-stream mapping of bed flow, and dedicated internal Lean training — reported reduced waste, better patient flow and stronger cross-departmental teamwork. Sites relying on ad hoc fixes did not."},
+  facilitatorNotes:{
+    suggestedRootCause:"The organisations lacked a structured, shared and internally-owned method for redesigning clinical and administrative processes, so improvement depended on individuals rather than on a repeatable system. (Documented fix: Rapid Cycle Improvement events, value-stream mapping of bed flow, and dedicated Lean training programmes.)",
+    herringIds:["E4","E7","E8"]
+  },
+  source:"Improving Care Delivery Through Lean: Implementation Case Studies, AHRQ — https://www.ahrq.gov/practiceimprovement/systemdesign/leancasestudies/index.html"
+},
+/* 7 */ {
+  title:"The Dumpsters Were Too Full",
+  industry:"Construction — Commercial Office Building",
+  briefing:"On the site of a new twelve-storey office building, weekly waste-hauling invoices show dumpsters fuller, and emptied more often, than the material schedule justifies. On a site walk, one crew was cutting drywall boards to length by eye and dropping the offcuts straight into the bin, while another crew waited nearly forty minutes for a delivery that had already arrived but was parked in the wrong staging area. Costs and schedule risk are rising. Diagnose it before the next progress claim.",
+  evidence:[
+    ev("E1","Ops — Site Waste Audit","Skip contents analysis","A sort of one week's skip contents finds a large share is usable offcut material, not genuine construction debris, concentrated in a few trades.",false),
+    ev("E2","Procurement","Material ordering record","Materials for several packages are ordered with a large 'just in case' allowance above the take-off quantity, with no feedback loop from actual site consumption.",false),
+    ev("E3","Ops — Site Logistics","Staging area layout note","There is no designated delivery and staging plan. Deliveries are unloaded wherever there is space, so crews search for material that is technically already on site.",false),
+    ev("E4","HR/People — Crew Interview","Foreman interview note","Crews cut to length on the spot by eye because no cutting schedule or optimised cutting list is issued with the drawings.",false),
+    ev("E5","Weather Log","Site weather record","Rainfall during the period was typical for the season and no weather-related stoppage was recorded.",true),
+    ev("E6","Quality Log","Rework and defect register","Rework arising from workmanship defects is low for the period and unrelated to the volume of material entering the skips.",true),
+    ev("E7","Finance","Waste haulage invoices","Haulage invoices show both increased skip volume and increased collection frequency, so disposal cost is rising on two fronts at once.",false),
+    ev("E8","Training Record","Site induction record","All operatives have completed site safety induction; the induction covers safety but contains nothing on material handling or waste.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"Three site processes have now been analysed step by step for value-adding versus non-value-adding activity. Waste is not a materials problem alone — over-ordering, unplanned staging and unoptimised cutting are each generating both physical waste and waiting time, and together account for roughly half the waste measured on site."},
+  facilitatorNotes:{
+    suggestedRootCause:"Site processes were never analysed for non-value-adding activity, so over-ordering, unplanned staging and uninstructed cutting generate physical and process waste as a matter of routine. (Documented fix: Lean Construction principles applied to three site processes; waste at the site was reduced by roughly half.)",
+    herringIds:["E5","E6","E8"]
+  },
+  source:"Waste Reduction by Lean Construction — Office Building Case Study, IOPscience, 2019 — https://iopscience.iop.org/article/10.1088/1757-899X/603/4/042061"
+},
+/* 8 */ {
+  title:"The Waste That Wasn't in the Skip",
+  industry:"Construction — Rebar / Reinforcement Works",
+  briefing:"A structural engineer reviewing a mid-rise building's rebar fabrication yard keeps reading the same line in the cost reports: 'material waste is within industry norms.' But standing at the cutting station, she watched workers wait on cranes, re-measure bars that had already been measured, and carry bent rebar back and forth between stations that could easily sit side by side. No rebar is being thrown away. The crew is still nowhere near its potential pace. Explain the gap.",
+  evidence:[
+    ev("E1","Ops — Time Study","Cutting station observation","Timed observation of the cutting process shows a large share of crew time spent waiting for crane availability rather than cutting.",false),
+    ev("E2","Ops — Layout Note","Yard layout sketch","Cutting, bending and storage stations are separated across the yard, so every bar is transported between stations that could be co-located.",false),
+    ev("E3","Ops — Method Note","Measuring practice note","Bars are measured at the cutting station and re-measured at the bending station because there is no standardised marking method carried between the two.",false),
+    ev("E4","Finance","Material waste cost report","The cost report tracks only scrapped material tonnage. It has no line item for waiting, transport, or rework time, so none of those losses appear anywhere in the project's waste figure.",false),
+    ev("E5","Quality Log","Rebar dimensional check","Dimensional checks on cut and bent bars show conformance to drawing within tolerance; the finished product is acceptable.",true),
+    ev("E6","Ops/SCM — Supplier Note","Steel mill delivery record","Rebar deliveries from the mill arrived on schedule and to specification throughout the period.",true),
+    ev("E7","HR/People — Crew Note","Crew interview","The crew reports that the sequence of work varies day to day depending on who is leading, and there is no written standard for the operation.",false),
+    ev("E8","Training Record","Operative skills record","Operatives are experienced and hold current trade certification for reinforcement work.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A computer simulation of the reinforcement process has been run. Removing non-value-adding activity and standardising the work sequence improves the cutting process by 67.1% and the bending process by 21%, lifting overall productivity 19.6% and cutting total cycle time by 24.5% — without reducing scrap tonnage at all."},
+  facilitatorNotes:{
+    suggestedRootCause:"Waste is defined and measured only as physical material scrap, so hidden process waste — waiting, transport, re-measuring, non-standardised sequence — is invisible to management and therefore never managed. (Documented fix: Lean Construction principles tested via computer simulation, eliminating non-value-added activity and standardising the work procedure.)",
+    herringIds:["E5","E6","E8"]
+  },
+  source:"Application of Lean Construction Principles to Reduce Construction Process Waste Using Computer Simulation, IJLTEMAS"
+},
+/* 9 */ {
+  title:"One in Five Sweaters Never Ships",
+  industry:"Textile / Garment Export Manufacturing",
+  briefing:"At a garment export factory producing sports sweaters for overseas retailers, the production manager is fielding two complaints at once: buyers pushing back on shipment delays, and the quality department rejecting nearly one in five finished sweaters before they can be packed. Workers insist they follow the specification sheets. Cutting blames sewing; sewing blames inconsistent fabric from cutting. Cycle times swing wildly day to day. Sixteen process stages, no agreement on which one is the problem.",
+  evidence:[
+    ev("E1","Quality Log","Non-conformance record","Roughly 19% of finished garments are rejected before packing. The rejects are recorded by garment, not by the stage at which the fault was introduced.",false),
+    ev("E2","Ops — Cycle Time Study","Stage-by-stage timing sheet","Average cycle time is about 62.5 minutes per unit, but the stage-level timings vary substantially from day to day with no documented standard time for most of the sixteen stages.",false),
+    ev("E3","Engineering","Process definition review","No SIPOC or process map exists for the sweater line. Inputs, suppliers, outputs and internal customers of each stage have never been formally defined.",false),
+    ev("E4","HR/People — Line Interview","Operator interview note","Operators at adjacent stages describe different interpretations of the same specification sheet, and each believes their own interpretation is correct.",false),
+    ev("E5","Marketing — Buyer Complaint","Buyer escalation transcript","The overseas buyer reports late shipments and inconsistent garment quality within the same carton, and has raised the possibility of moving the order.",false),
+    ev("E6","Maintenance Log","Sewing machine service record","Sewing machines are serviced on schedule and no machine has an abnormal breakdown or downtime record for the period.",true),
+    ev("E7","Ops/SCM — Supplier Note","Yarn supplier certificate","Yarn lots supplied for the order are certified to specification and consistent with previous orders.",true),
+    ev("E8","Training Record","Operator training log","Operators are trained on machine operation. No training covers in-process quality checking or what constitutes a defect at their own stage.",false)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A structured measurement phase is complete. The long-term process sigma level is calculated at -3.36 — the process is not merely underperforming, it is statistically incapable of meeting the specification as currently designed. Departmental blame was never going to move it."},
+  facilitatorNotes:{
+    suggestedRootCause:"The process has never been formally defined, measured or stabilised, so variation and defects are attributed to departments instead of being traced to the stages producing them. (Documented fix: DMAIC with SIPOC and VSM, plus a control plan. Results: cycle time 62.5 → 53.1 minutes, sigma -3.36 → 0.41, non-conforming 19.43% → 12.38%.)",
+    herringIds:["E6","E7"]
+  },
+  source:"Implementation of Lean Six Sigma to Improve the Quality and Productivity in Textile Sector, Springer/ACM DL, 2023 — https://dl.acm.org/doi/10.1007/978-3-031-35741-1_30"
+},
+/* 10 */ {
+  title:"Eighty-Five Out of a Hundred",
+  industry:"Garment Manufacturing — Shirt Line (Vietnam)",
+  briefing:"A Vietnamese garment manufacturer supplying jackets, shirts and trousers to international brands has a dashboard number that makes every meeting tense: only about 85 of every 100 orders ship on the date promised. The shirt line — the highest-volume product — is the worst offender. Supervisors point to slow operators. Industrial engineering suspects the workstation layout. Quality points to a defect rate that spikes unpredictably. Buyers are asking for penalty clauses. The plant director needs more than 'work faster'.",
+  evidence:[
+    ev("E1","Ops — Lead Time Study","Order-to-ship elapsed time record","Elapsed production lead time for a shirt order is many times its actual processing time. Batches sit between operations waiting for the full batch to complete before moving on.",false),
+    ev("E2","Ops — Layout Note","Workstation layout diagram","Workstations on the shirt line are arranged by machine type rather than by process sequence, so partly-finished work travels back and forth across the floor.",false),
+    ev("E3","Quality Log","Defect rate record","The defect rate on the shirt line spikes without a documented pattern, and defective units are found at final inspection after all value has been added.",false),
+    ev("E4","HR/People — Supervisor Note","Line supervisor interview","Supervisors manage to daily output totals only. There is no takt time, no standard work per station, and no hourly visibility of whether the line is ahead or behind.",false),
+    ev("E5","Marketing — Buyer Complaint","Buyer contract note","Buyers report missed ship dates on shirts specifically and have proposed penalty clauses in the next contract cycle.",false),
+    ev("E6","Maintenance Log","Machine downtime record","Machine downtime on the shirt line is low and comparable to the jacket and trouser lines, which do not have the same delivery problem.",true),
+    ev("E7","Ops/SCM — Fabric Note","Fabric receipt log","Fabric for shirt orders is received on schedule and inspected on arrival with a low rejection rate.",true),
+    ev("E8","Training Record","Operator skill matrix","The skill matrix shows operators are single-skilled to one station, so any imbalance in the line cannot be absorbed by moving people.",false)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A structured improvement project on the shirt line is complete. Production lead time fell by 89.21% and cycle time by 36% — with no increase in how fast anybody worked. The defect rate fell 37.45% alongside it. The delay was in the flow, not in the operators."},
+  facilitatorNotes:{
+    suggestedRootCause:"Long lead time, low productivity and high defects on the shirt line come from batch-and-queue flow, sequence-blind layout, absent standard work and single-skilled operators — not from operator speed. (Documented fix: DMAIC applied to the highest-demand shirt line.)",
+    herringIds:["E6","E7"]
+  },
+  source:"Applying Lean Six Sigma to Improve Garment Production Processes — A Case Study"
+},
+/* 11 */ {
+  title:"Full Shelves, Empty Stores",
+  industry:"Retail Distribution — Hypermarket Central Warehouse",
+  briefing:"The central distribution warehouse of a national hypermarket chain has a paradox. Inventory levels keep climbing and storage space keeps running out — yet stores still report stockouts on popular items. A cycle count shows the system's recorded inventory does not match what is physically on the shelf for a troubling number of SKUs. Pickers walk further than they used to. Logistics costs are rising faster than sales. 'Count more carefully' is not going to fix this.",
+  evidence:[
+    ev("E1","Ops — Inventory Audit","Cycle count variance report","Physical counts disagree with system records for a significant share of SKUs, in both directions, meaning replenishment decisions are being made on numbers that are not true.",false),
+    ev("E2","Ops/SCM — Range Note","SKU catalogue analysis","The active SKU count has grown steadily for years with no delisting process. A large tail of slow-moving SKUs occupies prime storage locations.",false),
+    ev("E3","Ops — Picking Study","Pick path travel measurement","Pick travel distance per order has increased as slow-moving SKUs were absorbed into locations near the pick face, pushing fast movers further away.",false),
+    ev("E4","Finance","Logistics cost report","Warehouse logistics cost as a percentage of sales is rising, driven by storage, handling and labour rather than by transport rates.",false),
+    ev("E5","HR/People — Team Note","Warehouse team interview","Receiving, put-away, picking and inventory control each work to their own targets. No cross-functional team owns warehouse performance end to end.",false),
+    ev("E6","Maintenance Log","Racking and MHE service record","Racking inspections and materials-handling equipment servicing are up to date with no outstanding defects.",true),
+    ev("E7","IT/WMS Log","WMS uptime report","The warehouse management system has had no significant outage in the period; the data problem is what is entered, not whether the system is running.",true),
+    ev("E8","Marketing — Promotion Note","Promotional calendar","Promotions ran at a normal cadence through the period, comparable to the same period last year.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"Current-state and future-state value stream maps of the warehouse are complete. Waste elimination — trimming inventory and the SKU tail, and fixing inventory accuracy — accounts for roughly a 6% gain. Cross-functional teamwork and employee empowerment deliver a further 12%. The larger prize was organisational, not technical."},
+  facilitatorNotes:{
+    suggestedRootCause:"Excess inventory, an uncontrolled SKU range and poor inventory accuracy persist because no one maps or owns the warehouse flow end to end and functions optimise locally. (Documented fix: current/future-state VSM with waste-elimination tools and cross-functional, empowered improvement teams.)",
+    herringIds:["E6","E7","E8"]
+  },
+  source:"Lean Warehousing: A Case Study in a Retail Hypermarket, IEOM Society, 2020 — https://ieomsociety.org/ieom2020/papers/163.pdf"
+},
+/* 12 */ {
+  title:"Forklifts That Search Instead of Move",
+  industry:"Beverage Manufacturing & Warehousing (FMCG)",
+  briefing:"At a beverage company's Moscow production and warehouse complex, forklift drivers spend a growing share of each shift not moving product but looking for it. As the product range expanded to keep pace with distribution demand, pallets ended up wherever there was open floor space rather than in a planned location. Finding a specific SKU can mean crossing half the warehouse. Inventory checks take longer every quarter and storage density is falling even though nothing has stopped selling.",
+  evidence:[
+    ev("E1","Ops — Forklift Study","Forklift activity log","A shift study shows a substantial portion of forklift running time is searching and repositioning, not productive movement of goods to or from a known location.",false),
+    ev("E2","Ops — Storage Note","Location assignment practice","There is no fixed or rule-based location assignment. Pallets are placed wherever space is available at the moment of put-away, and the location is not always recorded.",false),
+    ev("E3","Ops/SCM — Range Note","Product range growth record","The SKU range has expanded significantly to support distribution demand, but the storage layout has not been redesigned since before the expansion.",false),
+    ev("E4","Ops — Inventory Note","Stock count duration record","Each quarterly inventory count takes longer than the last, because locating every SKU is itself the bulk of the work.",false),
+    ev("E5","Maintenance Log","Forklift fleet service record","The forklift fleet is serviced on schedule and fleet availability is high throughout the period.",true),
+    ev("E6","HR/People — Shift Note","Warehouse operative interview","Operatives describe knowing where things are 'by memory and by asking whoever put it there,' with experienced staff finding stock faster than new starters.",false),
+    ev("E7","Quality Log","Product damage record","Product damage in storage is low and stable, so handling damage is not driving the space or search problem.",true),
+    ev("E8","Marketing — Distribution Note","Distribution demand forecast","Distribution volumes are forecast to keep growing, which will increase pressure on the same storage footprint.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A structured review of the complex confirms the constraint is not floor area. The same footprint, with rule-based location assignment, visual identification and a redesigned layout, supports materially higher storage density and much faster search and inventory control."},
+  facilitatorNotes:{
+    suggestedRootCause:"Storage locations are assigned ad hoc rather than by rule, and the layout was never redesigned as the product range grew, so search time and lost density scale with every new SKU. (Documented fix: introduce Lean manufacturing principles to the warehouse complex and build an investment programme around targeted process-efficiency measures.)",
+    herringIds:["E5","E7","E8"]
+  },
+  source:"Improvement of Warehouse Logistics Based on the Introduction of Lean Manufacturing Principles, Transportation Research Procedia, 2022 — https://www.sciencedirect.com/science/article/pii/S2352146522003453"
+},
+/* 13 */ {
+  title:"The Same Part, Twice the Time",
+  industry:"Aerospace Manufacturing — Precision Parts Supplier",
+  briefing:"A small supplier of precision aerospace parts has one machining cell that decides whether the whole shop hits its delivery dates. Nothing looks wrong from the outside: the machines run, parts get made. But identical parts, run on the same machine by the same operator, sometimes take nearly twice as long as at other times, and dimensional measurements vary more than the customer's tolerance sheet allows for comfort. Costs are creeping up with no single dramatic failure to point at.",
+  evidence:[
+    ev("E1","Ops — Cycle Time Data","Machining cycle time distribution","Cycle times for the same part number on the same machine show a wide spread rather than a tight distribution, with no documented cause recorded for any of the long runs.",false),
+    ev("E2","Engineering","Process map review","The current process map is out of date and includes steps that were added over time to catch problems rather than to add value; no step has been formally reviewed for necessity.",false),
+    ev("E3","Quality Log","Dimensional measurement record","Dimensional results vary more than the process capability the customer expects, with variation appearing across shifts as well as within a single shift.",false),
+    ev("E4","HR/People — Operator Interview","Operator method note","Operators describe small personal adjustments to setup and approach that are not written down anywhere, learned from whoever trained them.",false),
+    ev("E5","Facilities Log","Shop environment record","Shop floor temperature and humidity vary over the day and across seasons, and are not controlled or recorded against the machining process.",false),
+    ev("E6","Ops/SCM — Supplier Note","Bar stock certificate","Incoming bar stock is certified to specification with consistent metallurgical properties across the affected lots.",true),
+    ev("E7","Maintenance Log","Machine calibration record","The machining centre is calibrated on schedule and the last calibration passed without adjustment.",true),
+    ev("E8","Marketing — Customer Note","Customer delivery expectation","The customer's delivery expectations have not changed this year; the schedule is the same one the shop met previously.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A structured analysis has isolated the drivers of variation into environmental, human-factor and methods-related risk categories. Removing unnecessary steps and controlling those drivers cuts cycle time by 46% and process variation by 80%, taking the process above a sigma value of five — stable, not merely faster."},
+  facilitatorNotes:{
+    suggestedRootCause:"Cost is driven by uncontrolled process variation — undocumented operator methods, uncontrolled environmental conditions and accumulated non-value-adding process steps — none of which is visible in the shop's cost reports. (Documented fix: DMAIC, reducing process steps by 20%, a new process map, and control plans covering environmental, human-factor and methods risks.)",
+    herringIds:["E6","E7","E8"]
+  },
+  source:"Case Study: Lean 6 Sigma Application in Aerospace Industry, 6sigma.com — https://6sigma.com/case-study/lean-six-sigma-application-in-aerospace-industry/"
+},
+/* 14 */ {
+  title:"Defects at the Wafer's Edge",
+  industry:"Semiconductor Manufacturing",
+  briefing:"On a semiconductor fabrication line, the morning yield report has become something people dread. About one wafer in four shows defects — and they are not scattered randomly across the surface. They cluster near the edge. Engineers have ruled out the obvious culprits, and one lithography step keeps coming up as a person of interest, but nobody can prove which tool, setting or contamination source in that step is responsible. Die yield loss is stuck stubbornly around seven percent, and every point is real revenue.",
+  evidence:[
+    ev("E1","Quality Log","Wafer defect map","Defect maps show a consistent edge-concentrated spatial signature across affected wafers, not a random distribution — pointing to a specific process interaction rather than general contamination.",false),
+    ev("E2","IT/MES Log","Tool routing history","Wafer routing history shows the affected lots share a common lithography step, but that step runs across several tools and the data has not been analysed tool by tool.",false),
+    ev("E3","Engineering","Process parameter record","Tool settings for the lithography step were established at qualification and have never been experimentally optimised for the current product mix.",false),
+    ev("E4","Ops — Yield Report","Die yield loss trend","Die yield loss sits around 7% against a target range of 1-2%, and has been flat rather than drifting, suggesting a persistent systematic cause.",false),
+    ev("E5","Maintenance Log","Preventive maintenance record","Preventive maintenance on the lithography tools has been performed on schedule with no missed intervals in the period.",true),
+    ev("E6","Ops/SCM — Supplier Note","Bare wafer supplier certificate","Incoming bare wafers are certified within specification and the supplier has made no announced process change.",true),
+    ev("E7","Quality/Risk Log","Failure mode review","No process FMEA exists for this lithography step, so no control has ever been defined for the failure mode now being observed.",false),
+    ev("E8","HR/People — Shift Note","Fab technician interview","Technicians across shifts follow the same documented handling procedure and cleanroom protocol compliance audits are passing.",true)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"Statistical analysis by tool has isolated a single contributing tool within the lithography step. A designed experiment on that tool's settings, followed by a process FMEA to lock in controls, brings die yield loss down from roughly 7% into the 1-2% target range."},
+  facilitatorNotes:{
+    suggestedRootCause:"In-line defect contamination in one lithography tool went unidentified because tool-level statistical analysis, experimental optimisation of settings, and a process FMEA for this failure mode had never been performed. (Documented fix: DMAIC — cause-and-effect analysis, statistical isolation of the tool, Design of Experiments to optimise settings, and process FMEA in Control.)",
+    herringIds:["E5","E6","E8"]
+  },
+  source:"Gangidi, P.R., Application of Six Sigma in Semiconductor Manufacturing: A Case Study in Yield Improvement, ISSSP — https://isssp.org/lean-six-sigma-in-semiconductor-manufacturing/"
+},
+/* 15 */ {
+  title:"The Transaction That Took Days",
+  industry:"Banking / Financial Services",
+  briefing:"Inside a bank's operations centre, a routine internal transaction that should take minutes instead takes days to clear a chain of approvals, handoffs and manual checks. Customers calling to ask 'what's the status' have become common enough that a dedicated phone queue exists just for status enquiries. Some steps seem to exist because that is how it has always been done. Leadership wants faster turnaround without adding headcount — but first, where is the time actually going?",
+  evidence:[
+    ev("E1","Ops — Process Study","AS-IS process walkthrough","A walkthrough of the existing process finds actual processing time is a small fraction of total elapsed time; the rest is the file waiting in queues between desks.",false),
+    ev("E2","Ops — Approval Audit","Approval chain review","Several approval steps route the file through desks that have no decision-making authority over the outcome and have never rejected a case.",false),
+    ev("E3","Ops — Handoff Map","Departmental handoff count","The transaction crosses multiple departments, and each handoff requires the receiving desk to re-key or re-verify information already captured upstream.",false),
+    ev("E4","IT Systems","Automation assessment","Several manual checks duplicate validations the core system already performs automatically, but the manual step was never retired when the system was upgraded.",false),
+    ev("E5","Marketing — Customer Complaint","Status enquiry call log","Call volumes to the status-enquiry queue correlate directly with transaction turnaround time — customers call because they cannot see progress, not because anything has failed.",false),
+    ev("E6","HR/People — Staffing Note","Operations headcount record","Operations headcount and staff attendance are stable, and no desk in the chain is reporting an unmanageable workload.",true),
+    ev("E7","Training Record","Staff competency record","Operations staff are trained and certified on the procedures they perform, and procedural error rates are low.",true),
+    ev("E8","Compliance","Regulatory requirement note","Regulatory requirements mandate certain checks, but do not specify that they be performed sequentially, in separate departments, or manually.",false)
+  ],
+  twist:{tag:"9TH EVIDENCE — JUST IN",text:"A redesigned TO-BE process — centralising the scattered steps, rearranging the sequence, eliminating approvals with no decision rights and automating duplicated checks — has been tested against the old one. A Wilcoxon signed-rank test confirms a statistically significant, non-trivial reduction in total duration, with waiting time and processing time both down."},
+  facilitatorNotes:{
+    suggestedRootCause:"The process was never mapped end to end, so historical approvals, departmental handoffs and manual checks that duplicate system controls persist unchallenged, and lead time is dominated by waiting rather than work. (Documented fix: value stream map the AS-IS process, then centralise, rearrange, eliminate and automate to design a TO-BE process.)",
+    herringIds:["E6","E7"]
+  },
+  source:"Lean Management in the Banking Industry: A Case Study, International Journal of Industrial Engineering and Management, 2023 — https://jged.uns.ac.rs/index.php/ijiem/article/view/1179"
+}
+];
+
+// ---------- CASE FILES: what a participant needs in hand to work the Evidence Room ----------
+// mission: the question to answer  |  numbers: baseline facts from the source scenario
+// flow: the process at a glance (optional)  |  terms: plain-English glossary for jargon used in the folders
+const CASE_FILES = [
+/* 1 */ {
+  mission:"Find out why one door-trim replacement part reaches dealers so much later than promised. Look past the symptom (late delivery) for the single root cause that explains it.",
+  numbers:[["Where","Dealers on three continents"],["Journey on paper","6 steps, from warehouse pick to dealer"],["Customer impact","Repairs are delayed and some dealers now buy from a competing supplier"]],
+  flow:["Warehouse pick","Cross-dock","Freight forwarder","Customs","Regional hub","Dealer delivery"],
+  terms:[["Replacement (aftermarket) part","A spare part sold to repair a vehicle after the vehicle has been sold."],["Cross-dock","A facility where freight is moved from arriving to departing transport with little or no storage."],["Freight forwarder","A company that arranges transport and paperwork for shipments."],["Regional hub","A distribution centre serving the dealers of one region."],["Customs","The border authority whose clearance an international shipment needs before it can move on."]]
+},
+/* 2 */ {
+  mission:"Find why changeovers on this line take roughly twice as long as budgeted. Identify the single root cause behind the lost time, not just where the minutes are spent.",
+  numbers:[["Budgeted changeover","45 minutes"],["Typical actual","Regularly over 90 minutes"],["Overtime","Twice in one quarter a late changeover ran into paid overtime"],["Constraint","Corporate wants higher throughput without a second production line"]],
+  flow:["Line stops","Old tooling removed","New tooling fitted","Settings adjusted","Test batch run","Production restarts"],
+  terms:[["Changeover","The stoppage between the last good unit of one product and the first good unit of the next."],["Die","A shaped tool that forms or cuts the product on the line."],["Tool crib","The store where tools, dies and spare parts are kept."],["Throughput","How much good product the line makes in a given time."],["Internal activity","Work that can only be done while the machine is stopped."],["Off-specification (off-spec)","Product that fails its quality requirements."]]
+},
+/* 3 */ {
+  mission:"One component has a high defect rate and everyone has a theory (operators, raw material, tooling). Use the evidence to find the root cause that is actually supported, and why nobody could see it.",
+  numbers:[["Production pattern","Parts are made in weekly batches"],["Route","Each part passes through 12 operations"],["Impact","Rework is eating into shift output targets"],["Theories","Plant manager: operators. Operators: raw material. Maintenance: tooling is fine."]],
+  flow:["Batch released","Operations 1 to 12","End-of-line inspection"],
+  terms:[["Batch","A group of parts made together in one production run."],["Rework","Fixing a defective part so it can still be used."],["Scrap","Parts or material thrown away because they cannot be fixed."],["Fixture","A device that holds the part in position while it is worked on."],["Work instruction","The written step-by-step method for doing an operation."],["Sign-off","Formal confirmation that an operator is trained to do a task."]]
+},
+/* 4 */ {
+  mission:"Find why moving a wheelchair patient from the ward to X-ray takes about twenty minutes when the travel itself takes only a few. Identify the root cause of the lost time.",
+  numbers:[["Whole activity","About 20 minutes per patient"],["Actual travel","Only a few minutes"],["Symptoms","Rising staff overtime, patients 'parked' in corridors, radiology's daily patient count flat"]],
+  flow:["Patient ready for X-ray","Porter located","Wheelchair found","Chart checked","Moved to X-ray","Wait outside suite","Enters imaging room"],
+  terms:[["Porter","A hospital worker who moves patients and equipment between departments."],["Radiographer","The professional who operates the X-ray equipment and takes the images."],["Value-added time","Time spent on activity the patient actually needs (here, the imaging itself)."],["Non-value-added time","Time spent on activity that does not serve the patient's need, such as searching or waiting."],["Uptime","The share of time equipment is available and working."],["Ergonomics","How well work is designed to suit the body, to limit strain and fatigue."]]
+},
+/* 5 */ {
+  mission:"A funded Lean programme has not fixed ER overcrowding. Work out why the improvement failed to stick. The question is not why the department is busy.",
+  numbers:[["Programme","Government-funded 'Lean in Emergencies' initiative"],["Delivered by","Consultants: process maps, workshops, proposed new workflows"],["Time since launch","18 months"],["Result today","Corridors just as crowded, staff turnover higher, new procedures abandoned"]],
+  flow:null,
+  terms:[["Lean","A management approach that removes waste and keeps improving how work flows."],["Emergency department (ER)","The hospital unit that treats urgent, unscheduled cases."],["Triage","Sorting patients by urgency to decide who is seen first."],["Standard work","The agreed, documented method for doing a task."],["Frontline staff","People who do the day-to-day work with patients, as opposed to managers."]]
+},
+/* 6 */ {
+  mission:"Five hospital systems keep starting improvement efforts that fade. Find the shared root cause that stops them from lifting quality and cutting cost in a lasting way.",
+  numbers:[["Organisations","5 U.S. hospital systems, working independently"],["Shared frustration","Rising costs and uneven quality of care"],["What they tried","Isolated fixes, such as a new scheduling tool or a staffing tweak"],["Pattern","Changes rarely last once staff rotate or leadership moves on"]],
+  flow:null,
+  terms:[["Hospital system","A group of hospitals and services under common ownership or management."],["EHR","Electronic health record: the digital patient record system."],["Bed flow","How patients move from admission, through a bed, to discharge."],["Handoff","When responsibility for a patient or task passes from one person or team to another."],["Federal research agency","A national body that studies how to improve healthcare delivery."]]
+},
+/* 7 */ {
+  mission:"Find why this construction site produces far more waste than the material schedule justifies. Look for the root cause behind the waste, not only what is in the skips.",
+  numbers:[["Project","New 12-storey commercial office building"],["Signal","Skips are fuller, and emptied more often, than the material schedule justifies"],["Seen on a site walk","One crew cutting drywall to length by eye; another crew waiting nearly 40 minutes for a delivery parked in the wrong staging area"]],
+  flow:null,
+  terms:[["Skip (dumpster)","A large open container for site waste that a haulage firm collects."],["Offcut","A leftover piece of material after a board or bar is cut."],["Take-off","The quantity of each material worked out from the drawings."],["Staging area","Where deliveries are unloaded and held before use on site."],["Trade","A specialist group of workers, such as drywallers or electricians."],["Progress claim","A periodic request for payment based on work completed."]]
+},
+/* 8 */ {
+  mission:"The cost report says material waste is normal, yet the crew is far slower than it could be. Find the root cause of that gap.",
+  numbers:[["Where","Rebar fabrication yard for a mid-rise building"],["Reported","'Material waste is within industry norms'"],["Observed","Waiting on cranes, re-measuring bars, carrying bent rebar between stations"],["Scrap","No rebar is being thrown away"]],
+  flow:["Cutting station","Bending station","Storage","To the structure"],
+  terms:[["Rebar","Steel reinforcing bars placed inside concrete."],["Cutting / bending station","Where bars are cut to length and shaped."],["Tonnage","Weight of material; here, how scrapped steel is measured."],["Co-located","Placed next to each other."],["Tolerance","The allowed margin of error in a dimension."]]
+},
+/* 9 */ {
+  mission:"Late shipments and nearly one in five sweaters rejected, with departments blaming each other. Find the root cause underneath the blame.",
+  numbers:[["Process","16 stages"],["Rejections","About 1 in 5 finished sweaters rejected before packing (roughly 19%)"],["Cycle time","About 62.5 minutes per unit, swinging widely day to day"],["Pressure","Overseas buyers pushing back on delayed shipments"]],
+  flow:null,
+  terms:[["Non-conforming","A product that fails to meet its specification."],["Cycle time","The time to complete one unit of work."],["Specification sheet","The document that defines what the finished product must be."],["SIPOC","A one-page diagram of a process: Suppliers, Inputs, Process steps, Outputs, Customers."],["Sigma level","A score of how capable a process is; higher means fewer defects, and a negative value means it cannot reliably meet its specification."],["Yarn lot","A batch of yarn from one production run."]]
+},
+/* 10 */ {
+  mission:"Only about 85% of orders ship on time and everyone has a theory. Find the root cause on the shirt line that goes beyond 'people need to work faster'.",
+  numbers:[["On-time delivery","About 85 of every 100 orders ship on the promised date"],["Worst line","Shirts, the company's highest-volume product"],["Theories","Supervisors: slow operators. Engineering: workstation layout. Quality: defect spikes."],["Pressure","Buyers asking for penalty clauses in new contracts"]],
+  flow:null,
+  terms:[["On-time delivery","The share of orders shipped on the date promised."],["Lead time","Total elapsed time from an order starting to it being finished and shipped."],["Cycle time","Time to complete one unit at one stage."],["Takt time","The pace of production needed to meet customer demand, for example one shirt every N minutes."],["Batch","A group of units processed together before moving on."],["Skill matrix","A chart of which operators can work which stations."]]
+},
+/* 11 */ {
+  mission:"The warehouse is fuller than ever, yet stores run out of popular items. Find the root cause of this paradox.",
+  numbers:[["The paradox","Inventory keeps rising and space is running out, yet stores report stockouts"],["Record accuracy","System inventory does not match physical stock for a troubling number of SKUs"],["Picking","Pickers walk further than they used to"],["Costs","Logistics cost is rising faster than sales"]],
+  flow:["Receiving","Put-away","Storage","Picking","Dispatch to stores"],
+  terms:[["SKU","Stock-keeping unit: one distinct product or variant that is stocked and tracked."],["Cycle count","A routine physical count of part of the stock, compared with system records."],["Stockout","A product being unavailable when a store or customer needs it."],["Put-away","Moving received goods to their storage location."],["Pick face","The location from which items are picked for orders."],["MHE","Materials-handling equipment, such as forklifts and pallet trucks."],["WMS","Warehouse management system: the software that tracks stock and locations."]]
+},
+/* 12 */ {
+  mission:"Forklift drivers spend more of each shift searching than moving. Find the root cause behind the search time and the falling storage density.",
+  numbers:[["Site","Beverage production and warehouse complex in Moscow"],["Symptom","Forklift drivers spend a growing share of shifts searching for product"],["Trend","Inventory checks take longer each quarter; storage density is falling even though nothing has stopped selling"]],
+  flow:["Goods arrive","Put-away","Storage","Search and pick","Dispatch"],
+  terms:[["SKU","Stock-keeping unit: one distinct product or variant that is stocked and tracked."],["Pallet","A flat platform on which goods are stacked and moved by forklift."],["Put-away","Moving received goods to a storage location."],["Storage density","How much product is stored per unit of floor space."],["Location assignment","The rule for deciding where each pallet is placed."],["Distribution","Getting finished product from the warehouse to customers."]]
+},
+/* 13 */ {
+  mission:"The same part on the same machine sometimes takes nearly twice as long, and its dimensions vary. Find the root cause of the inconsistency.",
+  numbers:[["Where","One machining cell that decides whether the whole shop hits its delivery dates"],["Time","Same part, machine and operator: sometimes nearly twice as long"],["Quality","Measurements vary more than the customer's tolerance sheet is comfortable with"],["Cost","Creeping up with no single dramatic failure"]],
+  flow:null,
+  terms:[["Machining cell","A small group of machines that make parts together."],["Cycle time","Time to complete one part."],["Tolerance","The allowed margin of error in a dimension."],["Process variation","How much results differ from run to run."],["Process capability","How reliably a process stays inside its tolerance."],["Calibration","Checking and adjusting a machine so it cuts and measures accurately."],["Sigma value","A score of process capability; higher means fewer defects."],["Bar stock","Raw metal supplied as bars to be machined."]]
+},
+/* 14 */ {
+  mission:"Roughly one wafer in four has edge defects. Find the root cause: why can nobody yet say which tool or setting is responsible?",
+  numbers:[["Defect rate","About 1 in 4 wafers show defects"],["Pattern","Defects cluster near the wafer edge, not randomly"],["Die yield loss","About 7% (target range 1 to 2%)"],["Prime suspect","One lithography step; the tool, setting or contamination source is unproven"]],
+  flow:null,
+  terms:[["Wafer","A thin slice of silicon on which many chips are made."],["Die","One individual chip cut from a wafer."],["Die yield","The share of dies on a wafer that work."],["Lithography","The step that prints the circuit pattern onto the wafer using light."],["Bin failure","A die that fails testing and is sorted into a reject bin."],["Contamination","Unwanted particles or material on the wafer or a tool."],["FMEA","Failure Mode and Effects Analysis: a structured list of how a process can fail and which controls prevent it."],["MES","Manufacturing execution system: software that tracks each lot through production."],["Qualification","The formal testing done to approve a tool and its settings for production."],["Cleanroom","A controlled area with very few airborne particles."]]
+},
+/* 15 */ {
+  mission:"A routine internal transaction takes days instead of minutes. Find the root cause of where and why the time is lost.",
+  numbers:[["Should take","Minutes"],["Actually takes","Days, through approvals, handoffs and manual checks"],["Symptom","A dedicated phone queue exists just for status enquiries"],["Constraint","Faster turnaround without adding headcount"]],
+  flow:["Request received","Approvals","Departmental handoffs","Manual checks","Transaction cleared"],
+  terms:[["Operations centre","The back-office unit that processes transactions."],["Handoff","When work passes from one person or department to another."],["Re-key","Typing in again data that was already captured."],["Core system","The bank's main system of record for accounts and transactions."],["AS-IS / TO-BE","The current process (AS-IS) versus a redesigned future one (TO-BE)."],["Wilcoxon signed-rank test","A statistical test of whether two paired sets of measurements really differ."]]
+}
+];
+CASES.forEach((c,i)=>Object.assign(c, CASE_FILES[i]));
+
+// ---------- STATE ----------
+let state = {
+  role: null,          // 'participant' | 'facilitator'
+  username: null,
+  player: null,         // player record object
+  view: 'landing',
+  facilitatorDetailUser: null,
+  evExpanded: {},      // transient UI state: which evidence cards are currently expanded
+  timerHandle: null,
+  pollHandle: null,
+  timerSeconds: 0,
+  timerTotal: 0,
+  timerLabel: '',
+  twistCheckedThisEvidence: false,
+  evidenceTimerActive: false, // true once the Evidence Investigation timer has been started for this room visit — prevents opening/classifying a folder from resetting the countdown
+  drawingConcept: false,      // guards against a double-fire on the concept draw
+  overallTimerHandle: null    // separate interval for the persistent 45-min event clock; not touched by stopTimer()
+};
+
+const STEP_LABELS = ["Briefing","Evidence","5 Whys","Concept","Fix","Pitch","Summary"];
+const OVERALL_EVENT_SECONDS = 45 * 60; // total event budget shown in the topbar clock
+const EVIDENCE_ROOM_SECONDS = 10 * 60; // Evidence Investigation countdown
+const TWIST_RELEASE_AT_SECONDS = 8 * 60; // 9th evidence auto-surfaces this many seconds INTO the evidence room
+
+// ---------- STORAGE HELPERS ----------
+/* GitHub-backed (live) when GH_OWNER/GH_REPO/key are set; otherwise localStorage +
+   BroadcastChannel (tabs of ONE browser only). One JSON file per participant
+   (data/<EVENT_ID>/players/<id>.json) so participants never overwrite each other. */
+const PLAYER_PREFIX = 'player:';
+function safeId(id){ return String(id).replace(/[^A-Za-z0-9_\-.~:@+]/g,'_'); }
+function readKey(){
+  let t = GH_TOKEN || '';
+  try{
+    const m = /[#&]k=([^&]+)/.exec(location.hash);
+    if(m){
+      t = decodeURIComponent(m[1]);
+      try{ localStorage.setItem('fg_k', t); }catch(e){}
+      try{ history.replaceState(null,'',location.href.split('#')[0]); }catch(e){}
+    } else if(!t){ t = localStorage.getItem('fg_k') || ''; }
+  }catch(e){}
+  return t;
+}
+const GH_KEY = readKey();
+const LIVE_MODE = !!(GH_OWNER && GH_REPO && GH_KEY);
+const BASE = 'data/' + EVENT_ID;
+const PLAYERS_DIR = BASE + '/players', KV_DIR = BASE + '/kv';
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ---- GitHub API helpers ---- */
+const _etag = new Map();   // url -> {etag, body}  (304 replies are free against the rate limit)
+function ghUrl(path, withRef){ return `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}` + (withRef ? `?ref=${encodeURIComponent(GH_BRANCH)}` : ''); }
+function ghHeaders(extra){ return Object.assign({Authorization:'Bearer '+GH_KEY, Accept:'application/vnd.github+json'}, extra||{}); }
+async function ghGet(path, force){
+  const url = ghUrl(path, true), c = _etag.get(url);
+  const h = ghHeaders(); if(c && !force) h['If-None-Match'] = c.etag;
+  const r = await fetch(url, {headers:h, cache:'no-store'});
+  if(r.status === 304 && c) return c.body;
+  if(r.status === 404){ _etag.delete(url); return null; }
+  if(!r.ok) throw new Error('GitHub ' + r.status);
+  const body = await r.json(), et = r.headers.get('ETag');
+  if(et) _etag.set(url, {etag:et, body});
+  return body;
+}
+function ghDecode(file){ return JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g,''))))); }
+function ghEncode(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+let _wq = Promise.resolve();                       // one write at a time per browser
+function ghQueue(fn){ const p = _wq.then(fn, fn); _wq = p.catch(()=>{}); return p; }
+async function ghPut(path, mutate){                // read-modify-write with retry on conflicts
+  for(let i=0;i<6;i++){
+    const cur = await ghGet(path, true);
+    const next = mutate(cur && cur.content ? ghDecode(cur) : null);
+    const body = {message:'sync', content:ghEncode(next), branch:GH_BRANCH}; if(cur) body.sha = cur.sha;
+    const r = await fetch(ghUrl(path,false), {method:'PUT', headers:ghHeaders({'Content-Type':'application/json'}), body:JSON.stringify(body)});
+    if(r.ok){ _etag.delete(ghUrl(path,true)); _etag.delete(ghUrl(path.replace(/\/[^/]*$/,''),true)); return true; }
+    if(r.status === 409 || r.status === 422){ await sleep(150 + Math.random()*400*(i+1)); continue; }
+    throw new Error('GitHub write ' + r.status);
+  }
+  return false;
+}
+function pathFor(key){
+  return key.indexOf(PLAYER_PREFIX)===0 ? PLAYERS_DIR+'/'+safeId(key.slice(PLAYER_PREFIX.length))+'.json' : KV_DIR+'/'+safeId(key)+'.json';
+}
+async function ensureSeed(){                       // directories must exist so polling can use cheap 304s
+  for(const d of [PLAYERS_DIR, KV_DIR]){
+    try{ if((await ghGet(d)) === null) await ghQueue(()=>ghPut(d+'/_seed.json', c=>c||{seed:true})); }catch(e){}
+  }
+}
+if(LIVE_MODE) ensureSeed();
+
+/* ---- local fallback ---- */
+const LS_PREFIX = 'fifthgate:' + EVENT_ID + ':';
+let _bc = null;
+try{ _bc = new BroadcastChannel('fifthgate-' + EVENT_ID); }catch(e){}
+function lsRead(key){ try{ const r = localStorage.getItem(LS_PREFIX+key); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
+function lsWrite(key, val){ try{ localStorage.setItem(LS_PREFIX+key, JSON.stringify(val)); if(_bc) _bc.postMessage({key}); return true; }catch(e){ return false; } }
+function lsKeys(prefix){
+  const out = [];
+  try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k.indexOf(LS_PREFIX+prefix)===0) out.push(k.slice(LS_PREFIX.length)); } }catch(e){}
+  return out;
+}
+
+/* ---- facilitator live cache (filled by the live feed) ---- */
+let _liveCache = null;
+
+async function storageGet(key){
+  if(_liveCache && _liveCache.has(key)) return _liveCache.get(key);
+  if(!LIVE_MODE) return lsRead(key);
+  try{
+    if(key.indexOf(PLAYER_PREFIX) !== 0){            // kv flags: cheap directory check first
+      const list = await ghGet(KV_DIR);
+      if(!Array.isArray(list) || !list.some(x=>x.name === safeId(key)+'.json')) return null;
+    }
+    const f = await ghGet(pathFor(key));
+    return f ? ghDecode(f).v : null;
+  }catch(e){ console.error('get failed', key, e); return null; }
+}
+async function storageSet(key, value){
+  if(!LIVE_MODE) return lsWrite(key, value);
+  try{
+    const ok = await ghQueue(()=>ghPut(pathFor(key), ()=>({k:key, v:value, at:Date.now()})));
+    if(ok && _liveCache && _liveCache.has(key)) _liveCache.set(key, value);
+    return ok;
+  }catch(e){ console.error('set failed', key, e); return false; }
+}
+// Merge-write: only touches fields in `patch`.
+async function storageUpdate(key, patch){
+  if(!LIVE_MODE){ const cur = lsRead(key) || {}; return lsWrite(key, Object.assign({}, cur, patch)); }
+  try{
+    const ok = await ghQueue(()=>ghPut(pathFor(key), cur=>({k:key, v:Object.assign({}, cur && cur.v, patch), at:Date.now()})));
+    if(ok && _liveCache && _liveCache.has(key)) _liveCache.set(key, Object.assign({}, _liveCache.get(key), patch));
+    return ok;
+  }catch(e){ console.error('update failed', key, e); return false; }
+}
+async function storageListKeys(prefix){
+  if(_liveCache && prefix === PLAYER_PREFIX) return Array.from(_liveCache.keys()).filter(k=>k.indexOf(prefix)===0);
+  if(!LIVE_MODE) return lsKeys(prefix);
+  try{
+    const isP = prefix === PLAYER_PREFIX;
+    const list = await ghGet(isP ? PLAYERS_DIR : KV_DIR);
+    if(!Array.isArray(list)) return [];
+    return list.filter(x=>x.name.endsWith('.json') && x.name[0] !== '_')
+               .map(x=>(isP ? PLAYER_PREFIX : '') + x.name.slice(0,-5))
+               .filter(k=>k.indexOf(prefix)===0);
+  }catch(e){ console.error('list failed', prefix, e); return []; }
+}
+
+/* Facilitator live feed: onChange() fires whenever any participant saves. */
+let _unsubLive = null;
+function startLiveFeed(onChange){
+  stopLiveFeed();
+  _liveCache = new Map();
+  if(LIVE_MODE){
+    let stop = false, timer = null, first = true; const shas = new Map();
+    const tick = async ()=>{
+      if(stop) return;
+      try{
+        const list = await ghGet(PLAYERS_DIR);
+        let changed = first; first = false;
+        const seen = new Set();
+        if(Array.isArray(list)){
+          await Promise.all(list.filter(x=>x.name.endsWith('.json') && x.name[0] !== '_').map(async x=>{
+            seen.add(x.name);
+            if(shas.get(x.name) !== x.sha){
+              const f = await ghGet(PLAYERS_DIR+'/'+x.name, true);
+              if(f){ _liveCache.set(PLAYER_PREFIX + x.name.slice(0,-5), ghDecode(f).v); shas.set(x.name, x.sha); changed = true; }
+            }
+          }));
+        }
+        if(changed && !stop) onChange();
+      }catch(e){ console.error('live feed error', e); }
+      if(!stop) timer = setTimeout(tick, 3000);
+    };
+    tick();
+    _unsubLive = ()=>{ stop = true; clearTimeout(timer); };
+  } else {
+    const rebuild = ()=>{ _liveCache = new Map(); lsKeys(PLAYER_PREFIX).forEach(k=>_liveCache.set(k, lsRead(k))); onChange(); };
+    rebuild();
+    if(_bc) _bc.onmessage = rebuild;
+    window.addEventListener('storage', rebuild);
+    const t = setInterval(rebuild, 4000);
+    _unsubLive = ()=>{ clearInterval(t); window.removeEventListener('storage', rebuild); if(_bc) _bc.onmessage = null; };
+  }
+}
+function stopLiveFeed(){
+  if(_unsubLive){ try{ _unsubLive(); }catch(e){} _unsubLive = null; }
+  _liveCache = null;
+}
+function copyParticipantLink(){
+  const base = location.href.split('#')[0];
+  const link = GH_KEY ? base + '#k=' + encodeURIComponent(GH_KEY) : base;
+  const done = ()=>showToast('Participant link copied — share it with your group.');
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(done, ()=>fallbackCopy(link, done)); }
+  else fallbackCopy(link, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ showToast('Copy failed — copy the page URL manually and add #k=YOUR_TOKEN'); }
+  ta.remove();
+}
+
+function slug(name){
+  return name.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || 'detective';
+}
+function hashStr(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h*31 + s.charCodeAt(i)) >>> 0; }
+  return h;
+}
+function fmtTime(sec){
+  sec = Math.max(0, Math.round(sec));
+  const m = Math.floor(sec/60), s = sec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function fmtClock(ts){
+  if(!ts) return '—';
+  return new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+function relTime(ts){
+  if(!ts) return '—';
+  const diffSec = Math.max(0, Math.round((Date.now()-ts)/1000));
+  if(diffSec < 45) return 'just now';
+  const m = Math.round(diffSec/60);
+  if(m < 60) return m+' min ago';
+  const h = Math.round(m/60);
+  if(h < 24) return h+' hr ago';
+  return new Date(ts).toLocaleDateString();
+}
+
+function blankPlayer(username, caseIndex){
+  return {
+    username,
+    caseIndex,
+    caseTitle: CASES[caseIndex].title,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    step: 0, // 0=briefing ... 6=summary/complete
+    evidenceReviewed: [],
+    evidenceClassification: {}, // {evidenceId: 'relevant' | 'herring'}
+    twistRevealed: false,
+    whys: ["","","","",""],
+    rootCause: "",
+    concept: null,
+    fix: "",
+    roi: "",
+    pitchNotes: "",
+    completed: false,
+    scores: null,
+    totalScore: null,
+    tabSwitchCount: 0,
+    caseFileSeconds: 0,   // total time this player has spent with the case file panel open
+    allEvidenceDone: false
+  };
+}
+
+// Saves are debounced and coalesced: any number of clicks inside ~300 ms become ONE
+// db write, only one write is ever in flight, and the UI never waits on the network.
+let _savePl = null, _saveTimer = null, _saveInFlight = false, _saveDirty = false, _lastSaveToast = 0;
+let _skipScorePreserveNext = false;
+function savePlayer(immediate){
+  if(!state.player) return Promise.resolve();
+  _savePl = state.player;
+  _savePl.updatedAt = Date.now();
+  _saveDirty = true;
+  if(immediate){ clearTimeout(_saveTimer); _saveTimer = null; return flushSave(); }
+  if(!_saveTimer && !_saveInFlight) _saveTimer = setTimeout(flushSave, 300);
+  return Promise.resolve();
+}
+async function flushSave(){
+  _saveTimer = null;
+  if(_saveInFlight || !_saveDirty || !_savePl) return;
+  _saveInFlight = true; _saveDirty = false;
+  const pl = _savePl;
+  const skipPreserve = _skipScorePreserveNext; _skipScorePreserveNext = false;
+  try{
+    if(!skipPreserve){
+      try{
+        const remote = await storageGet('player:'+pl.username, true);
+        if(remote && remote.scores !== undefined){ pl.scores = remote.scores; pl.totalScore = remote.totalScore; }
+      }catch(e){ /* best-effort — fall through to saving normally either way */ }
+    }
+    const ok = await storageSet('player:'+pl.username, pl, true);
+    if(!ok && Date.now() - _lastSaveToast > 10000){
+      _lastSaveToast = Date.now();
+      showToast('⚠ Could not save — check your connection. Your work is still on screen.');
+    }
+  } finally {
+    _saveInFlight = false;
+    if(_saveDirty){ _saveTimer = setTimeout(flushSave, 300); }
+  }
+}
+
+// ---------- TIMER ----------
+function stopTimer(){
+  if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle = null; }
+}
+function startTimer(totalSeconds, label, onTick, onExpire){
+  stopTimer();
+  state.timerTotal = totalSeconds;
+  state.timerSeconds = totalSeconds;
+  state.timerLabel = label;
+  state.timerEndAt = Date.now() + totalSeconds*1000;
+  state.timerHandle = setInterval(()=>{
+    state.timerSeconds = Math.max(0, Math.round((state.timerEndAt - Date.now())/1000));
+    if(onTick) onTick(state.timerSeconds);
+    if(state.timerSeconds <= 0){
+      stopTimer();
+      if(onExpire) onExpire();
+    }
+  },1000);
+}
+function timerRunning(label){ return !!state.timerHandle && state.timerLabel === label; }
+function stopPoll(){
+  if(state.pollHandle){ clearInterval(state.pollHandle); state.pollHandle = null; }
+}
+
+// ---------- RENDER ROOT ----------
+async function render(){
+  const app = document.getElementById('app');
+  const body = await bodyHtml();
+  app.innerHTML = topbarHtml() + body;
+  attachHandlers();
+  if(state.role === 'participant' && state.player) startOverallTimerIfNeeded();
+}
+
+function topbarHtml(){
+  let right = '';
+  if(state.role === 'participant' && state.player){
+    const showClock = !state.player.completed && state.view !== 'landing' && state.view !== 'participant-login';
+    right = `<div class="row">
+      ${showClock ? `<span class="pillbtn mono" id="overallTimer" title="Total budget for the whole case: 45 minutes">Event: 45:00 / 45:00</span>` : ''}
+      <span class="pillbtn mono" title="Times this tab lost focus (switched away) during the case">🔀 Tab switches: ${state.player.tabSwitchCount||0}</span>
+      <span class="pillbtn mono">🕵️ ${escapeHtml(state.player.displayName||state.player.username)}</span>
+      ${!state.player.completed && state.view !== 'landing' ? `<button class="pillbtn" id="restartBtn" onclick="restartCase(this)" title="Wipe this case file and start again with fresh clocks">↺ Restart case</button>` : ''}
+      <button class="pillbtn" onclick="logout()">Switch user</button>
+    </div>`;
+  } else if(state.role === 'facilitator'){
+    right = `<button class="pillbtn" onclick="logout()">Log out</button>`;
+  }
+  return `<div class="topbar">
+    <div class="brand">
+      <div class="badge">5W</div>
+      <div class="brand-text">
+        <div class="k mono">CASE FILE</div>
+        <h1>The Fifth Gate</h1>
+      </div>
+    </div>
+    ${right}
+  </div>`;
+}
+
+function stepperHtml(activeIdx){
+  return `<div class="stepper">${STEP_LABELS.map((l,i)=>{
+    let cls = i<activeIdx ? 'done' : (i===activeIdx ? 'active':'');
+    return `<div class="st ${cls}">${i+1}. ${l}</div>`;
+  }).join('')}</div>`;
+}
+
+async function bodyHtml(){
+  switch(state.view){
+    case 'landing': return landingView();
+    case 'participant-login': return participantLoginView();
+    case 'facilitator-login': return facilitatorLoginView();
+    case 'briefing': return briefingView();
+    case 'evidence': return evidenceView();
+    case 'whys': return whysView();
+    case 'concept': return conceptView();
+    case 'fix': return fixView();
+    case 'pitch': return pitchView();
+    case 'summary': return summaryView();
+    case 'facilitator-dashboard': return await facilitatorDashboardView();
+    case 'facilitator-detail': return await facilitatorDetailView();
+    default: return landingView();
+  }
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- LANDING ----------
+function landingView(){
+  stopTimer(); stopPoll();
+  return `
+  <div class="hero">
+    <div class="tag">ROUND 5 · ROOT-CAUSE INVESTIGATION</div>
+    <h1>A defect crisis. No obvious single cause.</h1>
+    <p>Your team has 8 evidence folders, a ticking clock, and a plant manager who wants an answer. Chase the clues, chain your Five Whys to one root cause, then apply whichever Lean tool you draw — even if it isn't the "obvious" fit.</p>
+    <div class="role-row">
+      <div class="role-card" onclick="goto('participant-login')" role="button" tabindex="0">
+        <h3>Enter as a Detective</h3>
+        <p>Open your case file, work the evidence, and build your diagnosis solo or as a table.</p>
+        <div class="go">Start investigating →</div>
+      </div>
+      <div class="role-card" onclick="goto('facilitator-login')" role="button" tabindex="0">
+        <h3>Facilitator Login</h3>
+        <p>Watch every table's progress live, release the twist card, and score the final pitch.</p>
+        <div class="go">Open dashboard →</div>
+      </div>
+    </div>
+    <div class="steps-strip">
+      ${STEP_LABELS.map((s,i)=>`<div class="s">${i+1}. ${s}</div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">How scoring works</h3>
+    <p class="muted small">Root cause accuracy (30%) · red herrings avoided (10%) · fit-to-concept reasoning (30%) · clarity of ROI (20%) · time discipline (10%). Your facilitator scores the final two categories live during your pitch.</p>
+  </div>`;
+}
+
+// ---------- LOGIN ----------
+function participantLoginView(){
+  return `<div class="card" style="max-width:480px;margin:0 auto;">
+    <h2 style="margin-top:0;">Detective sign-in</h2>
+    <p class="muted small">Sign in with <strong>any email address</strong> (Gmail, Outlook, Yahoo, work or school mail, anything). Use the same email next time to resume your case file. Your work appears on the facilitator's board instantly. Each email is auto-assigned one of 15 cases.</p>
+    <div class="field">
+      <label>Your name / team name</label>
+      <input type="text" id="loginName" placeholder="e.g. Priya S. or Table 4" autocomplete="name">
+    </div>
+    <div class="field">
+      <label>Your email</label>
+      <input type="text" id="loginEmail" placeholder="you@example.com" autocomplete="email" inputmode="email" autocapitalize="off">
+    </div>
+    <div id="loginErr" class="err" style="display:none;"></div>
+    <div class="row">
+      <button class="btn" id="loginBtn" onclick="doParticipantLogin()">Open my case file</button>
+      <button class="btn secondary" onclick="goto('landing')">Back</button>
+    </div>
+  </div>`;
+}
+
+function facilitatorLoginView(){
+  return `<div class="card" style="max-width:420px;margin:0 auto;">
+    <h2 style="margin-top:0;">Facilitator login</h2>
+    <p class="muted small">Enter the facilitator password to view live progress and score every table.</p>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="facPw" placeholder="••••••••">
+    </div>
+    <div id="facErr" class="err" style="display:none;">Incorrect password. Try again.</div>
+    <div class="row">
+      <button class="btn" onclick="doFacilitatorLogin()">Log in</button>
+      <button class="btn secondary" onclick="goto('landing')">Back</button>
+    </div>
+  </div>`;
+}
+
+let _loggingIn = false;
+async function doParticipantLogin(){
+  if(_loggingIn) return;
+  const nameEl = document.getElementById('loginName');
+  const emailEl = document.getElementById('loginEmail');
+  const email = (emailEl.value||'').trim().toLowerCase();
+  const errEl = document.getElementById('loginErr');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ errEl.textContent = 'Please enter a valid email address.'; errEl.style.display='block'; return; }
+  const name = (nameEl.value||'').trim() || email.split('@')[0];
+  _loggingIn = true;
+  const btn = document.getElementById('loginBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Opening your case file…'; }
+  const username = slug(email);
+  let existing;
+  try{ existing = await storageGet('player:'+username, true); } finally { _loggingIn = false; }
+  if(existing){
+    state.player = existing;
+  } else {
+    const caseIndex = hashStr(username) % CASES.length;
+    state.player = blankPlayer(username, caseIndex);
+    // keep the original display name (not slug) for nicer display
+    state.player.displayName = name;
+    state.player.email = email;
+    savePlayer();   // background — don't make the player wait for it
+  }
+  if(!state.player.displayName) state.player.displayName = name;
+  state.role = 'participant';
+  state.username = username;
+  routeToPlayerStep();
+}
+
+function routeToPlayerStep(){
+  const stepMap = ['briefing','evidence','whys','concept','fix','pitch','summary'];
+  const s = state.player.completed ? 'summary' : stepMap[Math.min(state.player.step, stepMap.length-1)];
+  goto(s);
+}
+
+async function doFacilitatorLogin(){
+  const pw = document.getElementById('facPw').value;
+  const errEl = document.getElementById('facErr');
+  if(pw === FACILITATOR_PASSWORD){
+    state.role = 'facilitator';
+    goto('facilitator-dashboard');
+  } else {
+    errEl.style.display = 'block';
+  }
+}
+
+let _restartArmed = 0;
+function restartCase(btn){
+  // two-step confirm without confirm() (dialogs can be blocked inside hosted pages)
+  if(Date.now() - _restartArmed > 4000){
+    _restartArmed = Date.now();
+    btn.textContent = 'Click again to wipe & restart';
+    setTimeout(()=>{ if(btn.isConnected) btn.textContent = '↺ Restart case'; }, 4000);
+    return;
+  }
+  const old = state.player;
+  const fresh = blankPlayer(old.username, old.caseIndex);
+  fresh.displayName = old.displayName;
+  state.player = fresh; state.evExpanded = {}; state.evidenceTimerActive = false;
+  stopTimer(); stopPoll(); stopOverallTimer(); stopCaseFileClock();
+  state.caseOpen = false; state.caseFileOpenedAt = null;
+  _skipScorePreserveNext = true;
+  savePlayer();
+  goto('briefing');
+}
+function logout(){
+  stopLiveFeed();
+  if(state.player){ captureDrafts(); flushCaseFileTime(); savePlayer(true); }
+  stopTimer(); stopPoll(); stopOverallTimer(); stopCaseFileClock();
+  state = {role:null, username:null, player:null, view:'landing', facilitatorDetailUser:null, evExpanded:{}, timerHandle:null, pollHandle:null, evidenceTimerActive:false, drawingConcept:false, overallTimerHandle:null};
+  render();
+}
+
+function goto(view){
+  stopTimer();
+  if(view !== 'facilitator-dashboard') stopLiveFeed();
+  if(view !== 'evidence' && view !== 'whys') stopPoll();
+  // Leaving the evidence room for real (not just re-rendering inside it) —
+  // clear the flag so the countdown starts fresh next time they enter it.
+  if(state.view === 'evidence' && view !== 'evidence'){ state.evidenceTimerActive = false; }
+  if(state.view !== view){ flushCaseFileTime(); stopCaseFileClock(); state.caseOpen = false; }
+  state.view = view;
+  render();
+  window.scrollTo(0,0);
+}
+
+// ---------- OVERALL EVENT CLOCK (45 min, persistent across all steps) ----------
+// Runs on its own interval handle, separate from the per-step timer, so
+// navigating between steps (which calls stopTimer()) never pauses it.
+function stopOverallTimer(){
+  if(state.overallTimerHandle){ clearInterval(state.overallTimerHandle); state.overallTimerHandle = null; }
+}
+function paintOverallTimer(){
+  const el = document.getElementById('overallTimer');
+  if(!el || !state.player || !state.player.createdAt) return;
+  const elapsed = Math.floor((Date.now() - state.player.createdAt)/1000);
+  const remaining = OVERALL_EVENT_SECONDS - elapsed;
+  el.textContent = 'Event: ' + (remaining >= 0 ? fmtTime(remaining) : '00:00') + ' / 45:00';
+  el.classList.toggle('low', remaining <= 300);
+}
+function startOverallTimerIfNeeded(){
+  if(!state.player || !state.player.createdAt) return;
+  paintOverallTimer();                       // never leave the "45:00" placeholder showing after a redraw
+  if(state.overallTimerHandle) return;
+  state.overallTimerHandle = setInterval(paintOverallTimer, 1000);
+}
+
+// ---------- CASE FILE (mission, key facts, process, glossary) ----------
+function caseFileHtml(c, opts){
+  const brief = opts && opts.brief;
+  const nums = (c.numbers||[]).map(([k,v])=>`<div class="cf-num"><div class="k">${escapeHtml(k)}</div><div class="v">${escapeHtml(v)}</div></div>`).join('');
+  const flow = (c.flow && c.flow.length) ? `<div class="cf-h">How the work flows</div><div class="cf-flow">${c.flow.map((st,i)=>`${i?'<span class="cf-arrow">›</span>':''}<span class="cf-step">${escapeHtml(st)}</span>`).join('')}</div>` : '';
+  const terms = (c.terms && c.terms.length) ? `<div class="cf-h">Key terms</div><dl class="cf-terms">${c.terms.map(([t,d])=>`<dt>${escapeHtml(t)}</dt><dd>${escapeHtml(d)}</dd>`).join('')}</dl>` : '';
+  return `${brief ? `<div class="cf-h" style="margin-top:0;">The situation</div><div class="cf-brief">${escapeHtml(c.briefing)}</div>` : ''}
+    <div class="cf-mission"><strong>🎯 Your mission.</strong> ${escapeHtml(c.mission)}</div>
+    <div class="cf-h">Key facts</div><div class="cf-nums">${nums}</div>
+    ${flow}
+    ${terms}
+    <div class="cf-h">Judging the evidence</div>
+    <p class="cf-judge"><strong style="color:var(--good);">✓ Relevant clue</strong> — helps explain <em>why</em> the problem happens. <strong style="color:#e08a76;">🚩 Red herring</strong> — may be true, but does not explain the problem. Roughly 2–3 of the 8 folders are noise; the rest link together into a chain of causes.</p>`;
+}
+function caseFileToggleBtn(){
+  return `<button class="pillbtn cf-toggle" id="cfBtn" onclick="toggleCaseFile()" title="Read the case again without leaving this page or stopping your clock">${state.caseOpen ? '✕ Hide case file' : '📂 Case file'}</button>`;
+}
+function caseFilePanel(c){
+  return `<div class="casefile" id="cfPanel" style="display:${state.caseOpen ? 'block' : 'none'};">
+    <p class="muted small mono" id="cfElapsed" style="margin:0 0 12px;">📖 Case file open: ${fmtTime(caseFileElapsedNow())}</p>
+    ${caseFileHtml(c, {brief:true})}
+    <div class="row" style="margin-top:16px;"><button class="btn secondary" onclick="toggleCaseFile()">Close case file</button></div>
+  </div>`;
+}
+// Tracks, per player, how long they spend re-reading the case file — shown live to the
+// participant while the panel is open, and totalled for the facilitator to see.
+function caseFileElapsedNow(){
+  return state.caseFileOpenedAt ? (Date.now()-state.caseFileOpenedAt)/1000 : (state.player ? (state.player.caseFileSeconds||0) : 0);
+}
+function flushCaseFileTime(){
+  if(state.caseFileOpenedAt && state.player){
+    state.player.caseFileSeconds = (state.player.caseFileSeconds||0) + (Date.now()-state.caseFileOpenedAt)/1000;
+    state.caseFileOpenedAt = null;
+    savePlayer();
+  }
+}
+function stopCaseFileClock(){
+  if(state.caseFileClockHandle){ clearInterval(state.caseFileClockHandle); state.caseFileClockHandle = null; }
+}
+function startCaseFileClock(){
+  stopCaseFileClock();
+  state.caseFileClockHandle = setInterval(()=>{
+    const el = document.getElementById('cfElapsed');
+    if(el) el.textContent = '📖 Case file open: ' + fmtTime(caseFileElapsedNow());
+  }, 1000);
+}
+function toggleCaseFile(){
+  state.caseOpen = !state.caseOpen;
+  if(state.caseOpen){ state.caseFileOpenedAt = Date.now(); startCaseFileClock(); }
+  else { flushCaseFileTime(); stopCaseFileClock(); }
+  const panel = document.getElementById('cfPanel'), btn = document.getElementById('cfBtn');
+  if(panel) panel.style.display = state.caseOpen ? 'block' : 'none';
+  if(btn) btn.textContent = state.caseOpen ? '✕ Hide case file' : '📂 Case file';
+  if(state.caseOpen && panel) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ---------- BRIEFING ----------
+function briefingView(){
+  const c = CASES[state.player.caseIndex];
+  const brResume = timerRunning('Case Briefing');
+  if(!brResume) startTimer(180, 'Case Briefing', (sec)=>{
+    const t = document.getElementById('brTimer');
+    if(t){ t.textContent = fmtTime(sec); if(sec<=30) t.classList.add('low'); }
+  }, ()=>{
+    // Briefing time is up — move the detective into the Evidence Room automatically.
+    if(state.view === 'briefing'){
+      showToast('⏱ Briefing time is up — entering the Evidence Room');
+      advanceTo('evidence');
+    }
+  });
+  return `
+  ${stepperHtml(0)}
+  <div class="card">
+    <div class="case-header">
+      <div>
+        <span class="stamp-tag">CASE #${state.player.caseIndex+1} · ${escapeHtml(c.industry)}</span>
+        <h2 style="margin:10px 0 0;">${escapeHtml(c.title)}</h2>
+      </div>
+      <div class="timer" id="brTimer">${fmtTime(brResume ? state.timerSeconds : 180)}</div>
+    </div>
+    <div class="briefing-paper">${escapeHtml(c.briefing)}</div>
+    <div class="casefile" style="margin-top:18px;">${caseFileHtml(c, {brief:false})}</div>
+    <div class="row" style="margin-top:20px;">
+      <button class="btn" onclick="advanceTo('evidence')">Begin Investigation →</button>
+    </div>
+  </div>`;
+}
+
+// ---------- EVIDENCE ----------
+function evidenceView(){
+  const c = CASES[state.player.caseIndex];
+
+  // Only (re)start the countdown + poll the FIRST time we enter this room.
+  // evidenceView() re-runs on every click inside it (opening a folder,
+  // classifying evidence) because those call render() directly — without
+  // this guard, startTimer() would wipe the countdown back to full every
+  // single click, which is why the 10-min clock and the 8-min auto-reveal
+  // never actually ran in practice. Real navigation away from 'evidence'
+  // (see goto()) clears the flag so re-entering the room later starts fresh.
+  if(!state.evidenceTimerActive){
+    state.evidenceTimerActive = true;
+    // The 10-minute room clock starts the first time the player enters and is
+    // remembered, so leaving for Five Whys and coming back doesn't restart it.
+    if(!state.player.evidenceStartedAt){ state.player.evidenceStartedAt = Date.now(); savePlayer(); }
+    const remaining = Math.max(0, EVIDENCE_ROOM_SECONDS - Math.floor((Date.now() - state.player.evidenceStartedAt)/1000));
+    if(!state.player.twistRevealed && evidenceElapsed() >= TWIST_RELEASE_AT_SECONDS){
+      state.player.twistRevealed = true; savePlayer();   // 8 minutes already passed while away
+    }
+    startTimer(remaining, 'Evidence Investigation', (sec)=>{
+      const t = document.getElementById('evTimer');
+      if(t){ t.textContent = fmtTime(sec); if(sec<=90) t.classList.add('low'); }
+      if(!state.player.twistRevealed && evidenceElapsed() >= TWIST_RELEASE_AT_SECONDS){
+        revealTwist();
+      }
+    }, ()=>{});
+    startTwistWatch();
+  }
+
+  if(!state.player.evidenceClassification) state.player.evidenceClassification = {};
+  if(!state.evExpanded) state.evExpanded = {};
+
+  const rotations = [-2,1,-1,2,-1.5,1.5,-2.5,1];
+  const classification = state.player.evidenceClassification;
+  const classifiedCount = c.evidence.filter(e=>classification[e.id]).length;
+  const cardsHtml = c.evidence.map((e,i)=>{
+    const opened = !!state.evExpanded[e.id];
+    const reviewed = state.player.evidenceReviewed.includes(e.id);
+    const guess = classification[e.id]; // 'relevant' | 'herring' | undefined
+    return `<div class="ev-card ${opened?'open':''} ${reviewed?'reviewed':''}" data-ev="${e.id}" style="--r:${rotations[i%rotations.length]}deg">
+      <div class="ev-head" onclick="toggleEvidence('${e.id}')">
+        <span class="tag">${escapeHtml(e.tag)}</span>
+        <div class="title">${escapeHtml(e.title)}</div>
+        <div class="foot">${opened ? 'Tap to collapse' : (reviewed ? '✓ Reviewed — tap to reopen' : 'Tap to open folder')}</div>
+      </div>
+      <div class="body">
+        <div class="body-text">${escapeHtml(e.text)}</div>
+        <div class="ev-classify" role="group" aria-label="Classify this evidence">
+          <button type="button" class="classify-btn relevant ${guess==='relevant'?'active':''}" onclick="event.stopPropagation(); classifyEvidence('${e.id}','relevant')">✓ Relevant Clue</button>
+          <button type="button" class="classify-btn herring ${guess==='herring'?'active':''}" onclick="event.stopPropagation(); classifyEvidence('${e.id}','herring')">🚩 Red Herring</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const twistHtml = state.player.twistRevealed ? `
+    <div class="ev-card twist open" style="--r:0deg">
+      <div class="ev-head" style="cursor:default;">
+        <span class="tag">${escapeHtml(c.twist.tag)}</span>
+        <div class="title">Evidence #9</div>
+        <div class="foot" style="color:#e0b98f;">New — factor this into your Five Whys</div>
+      </div>
+      <div class="body">
+        <div class="body-text">${escapeHtml(c.twist.text)}</div>
+      </div>
+    </div>` : '';
+
+  return `
+  ${stepperHtml(1)}
+  <div class="card">
+    <div class="case-header">
+      <div>
+        <span class="stamp-tag">CASE #${state.player.caseIndex+1}</span>
+        <h2 style="margin:10px 0 0;">Evidence Room</h2>
+      </div>
+      <div class="row">${caseFileToggleBtn()}<div class="timer" id="evTimer">${fmtTime(state.timerSeconds)}</div></div>
+    </div>
+    ${caseFilePanel(c)}
+    <p class="muted small"><span id="evCount">${state.player.evidenceReviewed.length}/8 folders opened · ${classifiedCount}/8 classified.</span> Open a folder, read it, then mark it <strong>Relevant Clue</strong> (helps explain <em>why</em> the problem happens) or <strong>Red Herring</strong> (true, but doesn't explain it). About 2–3 of the 8 are noise. Need the story again? Open the <strong>📂 Case file</strong> — your clock keeps running. A 9th piece of evidence will surface automatically eight minutes in.${state.timerSeconds<=0 ? ' <strong style="color:#e08a76;">⏱ This room\'s clock has run out — use “↺ Restart case” (top right) for a fresh 10:00 and a clean start.</strong>' : ''}</p>
+    <div class="evidence-grid">${cardsHtml}${twistHtml}</div>
+    <div class="row" style="margin-top:20px;">
+      <button class="btn" onclick="advanceTo('whys')">Proceed to Five Whys →</button>
+      <button class="btn secondary" onclick="advanceTo('briefing')" title="Leaves the Evidence Room; your room clock keeps running">← Full briefing page</button>
+    </div>
+  </div>`;
+}
+
+// Update the cards in place: no page rebuild, no flicker, no scroll jump, instant response.
+function paintEvidence(){
+  const p = state.player, c = CASES[p.caseIndex];
+  const cls = p.evidenceClassification || {};
+  let classified = 0;
+  document.querySelectorAll('.ev-card[data-ev]').forEach(card=>{
+    const id = card.dataset.ev;
+    const opened = !!state.evExpanded[id];
+    const reviewed = p.evidenceReviewed.includes(id);
+    if(cls[id]) classified++;
+    card.classList.toggle('open', opened);
+    card.classList.toggle('reviewed', reviewed);
+    card.querySelector('.foot').textContent = opened ? 'Tap to collapse' : (reviewed ? '✓ Reviewed — tap to reopen' : 'Tap to open folder');
+    card.querySelector('.classify-btn.relevant').classList.toggle('active', cls[id] === 'relevant');
+    card.querySelector('.classify-btn.herring').classList.toggle('active', cls[id] === 'herring');
+  });
+  const el = document.getElementById('evCount');
+  if(el) el.textContent = p.evidenceReviewed.length + '/8 folders opened · ' + classified + '/8 classified.';
+}
+
+function toggleEvidence(id){
+  state.evExpanded[id] = !state.evExpanded[id];
+  if(state.evExpanded[id] && !state.player.evidenceReviewed.includes(id)){
+    state.player.evidenceReviewed.push(id);
+    savePlayer();
+  }
+  paintEvidence();
+}
+
+function classifyEvidence(id, guess){
+  if(!state.player.evidenceClassification) state.player.evidenceClassification = {};
+  const current = state.player.evidenceClassification[id];
+  // tapping the same classification again clears it; otherwise set it
+  state.player.evidenceClassification[id] = (current === guess) ? undefined : guess;
+  if(state.player.evidenceClassification[id] === undefined) delete state.player.evidenceClassification[id];
+  savePlayer();
+  paintEvidence();
+  checkAllEvidenceClassified();
+}
+
+// Fires once, the moment all 8 real folders have a Relevant/Red Herring answer. Re-uses the
+// exact reveal + remaining-time logic evidenceView() already runs for the natural 8-minute
+// mark, by simply moving the room's start time back so that mark has just been reached.
+function checkAllEvidenceClassified(){
+  const p = state.player;
+  if(!p || p.allEvidenceDone) return;
+  const c = CASES[p.caseIndex];
+  const cls = p.evidenceClassification || {};
+  if(c.evidence.filter(e=>cls[e.id]).length < c.evidence.length) return;
+  p.allEvidenceDone = true;
+  const hadTwist = p.twistRevealed;
+  if(p.evidenceStartedAt && evidenceElapsed() < TWIST_RELEASE_AT_SECONDS){
+    p.evidenceStartedAt = Date.now() - TWIST_RELEASE_AT_SECONDS*1000;   // final 2 minutes start now
+  }
+  savePlayer();
+  state.evidenceTimerActive = false;   // force the room to rebuild its countdown from the new start time
+  if(state.view === 'evidence'){
+    render();
+    if(!hadTwist) showToast('🕵️ All evidence classified — Evidence #9 is in. 2 minutes left.');
+  }
+}
+
+function evidenceElapsed(){
+  const st = state.player && state.player.evidenceStartedAt;
+  return st ? (Date.now() - st)/1000 : 0;
+}
+// Watches for the 9th evidence (8 min after entering the room, or the facilitator's
+// release). Runs in the Evidence Room AND on the Five Whys page, so the twist
+// reaches players wherever they are in that stretch.
+async function checkTwist(){
+  const p = state.player;
+  if(!p || p.twistRevealed) return;
+  if(p.evidenceStartedAt && evidenceElapsed() >= TWIST_RELEASE_AT_SECONDS){ revealTwist(); return; }
+  const flag = await storageGet('global_event_twist_'+p.caseIndex, true);
+  // only honour a release issued while this player's case file existed (a leftover flag from an old session is ignored)
+  if(flag && flag.released && (flag.at||0) >= (p.createdAt||0)) revealTwist();
+}
+function startTwistWatch(){
+  stopPoll();
+  if(!state.player || state.player.twistRevealed) return;
+  state.pollHandle = setInterval(checkTwist, 6000);
+}
+function revealTwist(){
+  if(!state.player || state.player.twistRevealed) return;
+  state.player.twistRevealed = true;
+  stopPoll();
+  savePlayer();
+  if(state.view === 'evidence' || state.view === 'whys'){
+    captureDrafts();   // don't wipe half-typed answers when the page redraws
+    render();
+    showToast('🔎 Evidence #9 has just surfaced');
+  }
+}
+
+// ---------- 5 WHYS ----------
+function whysView(){
+  const w = state.player.whys;
+  if(!state.pollHandle && !state.player.twistRevealed && state.player.evidenceStartedAt) startTwistWatch();
+  const cc = CASES[state.player.caseIndex];
+  const twistNote = state.player.twistRevealed ? `<div class="twist-note"><div class="mono small" style="color:#e0b98f;margin-bottom:6px;">${escapeHtml(cc.twist.tag)} · Evidence #9</div>${escapeHtml(cc.twist.text)}</div>` : '';
+  const items = [0,1,2,3,4].map(i=>`
+    <div class="why-item">
+      <div class="why-num">${i+1}</div>
+      <div class="field">
+        <label>Why ${i+1}${i===0?' — why did the defect happen?':' — why did that happen?'}</label>
+        <textarea id="why${i}" rows="2" placeholder="${i===0?'Start from the observed defect...':'Dig one level deeper...'}">${escapeHtml(w[i])}</textarea>
+      </div>
+    </div>`).join('');
+  return `
+  ${stepperHtml(2)}
+  <div class="card">
+    <div class="case-header"><h2 style="margin:0;">Chain your Five Whys</h2>${caseFileToggleBtn()}</div>
+    ${caseFilePanel(cc)}
+    <p class="muted small">Each answer should explain the one before it. Land on a single, specific, fixable root cause — not "human error" or "bad luck."</p>
+    ${twistNote}
+    <div class="why-chain">${items}</div>
+    <div class="field">
+      <label>Root Cause Statement (one clear sentence)</label>
+      <textarea id="rootCause" rows="2" placeholder="State the single root cause your chain points to...">${escapeHtml(state.player.rootCause)}</textarea>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="saveWhysAndAdvance()">Lock in root cause →</button>
+      <button class="btn secondary" onclick="advanceTo('evidence')">← Back to evidence</button>
+    </div>
+  </div>`;
+}
+
+function saveWhysAndAdvance(){
+  for(let i=0;i<5;i++){ state.player.whys[i] = document.getElementById('why'+i).value; }
+  state.player.rootCause = document.getElementById('rootCause').value;
+  advanceTo('concept');
+}
+
+// ---------- CONCEPT DRAW ----------
+function conceptView(){
+  const drawn = state.player.concept;
+  return `
+  ${stepperHtml(3)}
+  <div class="card" style="text-align:center;">
+    <h2 style="margin-top:0;">Draw your Lean concept</h2>
+    <p class="muted small">Whatever you draw is the tool you must use — even if it isn't the obvious fit for your root cause. Fit-to-concept reasoning is worth 30% of your score.</p>
+    <div class="deck-wrap">
+      ${drawn ? conceptResultHtml(drawn) : `
+        <div class="deck-fan" onclick="drawConcept()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();drawConcept();}" role="button" tabindex="0" style="cursor:pointer;" aria-label="Draw a card from the deck">
+          ${[0,1,2,3,4,5].map(i=>`<div class="card-back" style="left:calc(50% - 48px + ${(i-2.5)*24}px); transform:rotate(${(i-2.5)*7}deg);">?</div>`).join('')}
+        </div>
+        <button class="btn" onclick="drawConcept()" ${state.drawingConcept?'disabled':''}>${state.drawingConcept?'Drawing…':'Draw a card from the deck'}</button>
+      `}
+    </div>
+    ${drawn ? `<div class="row" style="justify-content:center;margin-top:22px;"><button class="btn" onclick="advanceTo('fix')">Prescribe the fix →</button></div>` : ''}
+  </div>`;
+}
+
+function conceptResultHtml(id){
+  const c = CONCEPTS.find(x=>x.id===id);
+  return `<div class="concept-result">
+    <div class="sub">CARD DRAWN</div>
+    <h2>${escapeHtml(c.name)}</h2>
+    <p>${escapeHtml(c.blurb)}</p>
+  </div>`;
+}
+
+function drawConcept(){
+  if(state.drawingConcept || state.player.concept) return; // already drawn / draw in flight — ignore extra clicks
+  state.drawingConcept = true;
+  const pick = CONCEPTS[Math.floor(Math.random()*CONCEPTS.length)];
+  state.player.concept = pick.id;
+  savePlayer();
+  state.drawingConcept = false;
+  render();
+}
+
+// ---------- PRESCRIBE FIX ----------
+function fixView(){
+  const c = CONCEPTS.find(x=>x.id===state.player.concept);
+  return `
+  ${stepperHtml(4)}
+  <div class="card">
+    <h2 style="margin-top:0;">Prescribe the fix</h2>
+    <p class="muted small">Your tool: <strong style="color:var(--gold);">${escapeHtml(c ? c.name : '—')}</strong>. Apply it specifically to your root cause below — generic answers score poorly on fit-to-concept reasoning.</p>
+    <div class="field">
+      <label>How would you apply ${escapeHtml(c?c.name:'this concept')} to your root cause?</label>
+      <textarea id="fixText" rows="5" placeholder="Be specific: what changes, who owns it, where in the process it happens...">${escapeHtml(state.player.fix)}</textarea>
+    </div>
+    <div class="field">
+      <label>Predicted outcome / ROI</label>
+      <textarea id="roiText" rows="3" placeholder="e.g. defect rate drops from X% to Y%, saving Z per month in returns/rework...">${escapeHtml(state.player.roi)}</textarea>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="saveFixAndAdvance()">Save & continue →</button>
+      <button class="btn secondary" onclick="advanceTo('concept')">← Back</button>
+    </div>
+  </div>`;
+}
+
+function saveFixAndAdvance(){
+  state.player.fix = document.getElementById('fixText').value;
+  state.player.roi = document.getElementById('roiText').value;
+  advanceTo('pitch');
+}
+
+// ---------- PITCH ----------
+function pitchView(){
+  const pitchResume = timerRunning('Pitch Prep');
+  if(!pitchResume) startTimer(510, 'Pitch Prep', (sec)=>{
+    const t = document.getElementById('pitchTimer');
+    if(t){ t.textContent = fmtTime(sec); if(sec<=60) t.classList.add('low'); }
+  }, ()=>{});
+  return `
+  ${stepperHtml(5)}
+  <div class="card">
+    <div class="case-header">
+      <div><h2 style="margin:0;">Case Closed — Pitch Prep</h2></div>
+      <div class="timer" id="pitchTimer">${fmtTime(pitchResume ? state.timerSeconds : 510)}</div>
+    </div>
+    <p class="muted small">2 minutes per team in front of the judges: Diagnosis → Concept → Fix → ROI. Jot your talking points below, then move to your summary sheet.</p>
+    <div class="field">
+      <label>Pitch notes / talking points</label>
+      <textarea id="pitchNotes" rows="6" placeholder="Opening line, the moment you found the real clue, why this concept works despite not being the obvious fit...">${escapeHtml(state.player.pitchNotes)}</textarea>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="savePitchAndAdvance()">Finish → View case summary</button>
+      <button class="btn secondary" onclick="advanceTo('fix')">← Back</button>
+    </div>
+  </div>`;
+}
+
+function savePitchAndAdvance(){
+  state.player.pitchNotes = document.getElementById('pitchNotes').value;
+  state.player.completed = true;
+  advanceTo('summary');
+}
+
+// ---------- SUMMARY ----------
+function summaryView(){
+  stopTimer(); stopPoll();
+  const p = state.player;
+  const c = CASES[p.caseIndex];
+  const concept = CONCEPTS.find(x=>x.id===p.concept);
+  const block = (title, content) => `<div class="summary-block"><h3>${title}</h3><div class="content ${content?'':'empty'}">${escapeHtml(content) || 'Not completed'}</div></div>`;
+  return `
+  ${stepperHtml(6)}
+  <div class="card">
+    <div class="flex-between">
+      <div>
+        <span class="stamp-tag">CASE CLOSED</span>
+        <h2 style="margin:10px 0 0;">${escapeHtml(p.displayName||p.username)}'s Case File</h2>
+        <p class="muted small">Case #${p.caseIndex+1}: ${escapeHtml(c.title)} · ${escapeHtml(c.industry)}</p>
+      </div>
+      <button class="btn" onclick="downloadSummaryPDF()">⬇ Download PDF summary</button>
+    </div>
+    <hr class="dash">
+    ${block('EVIDENCE REVIEWED', p.evidenceReviewed.length ? c.evidence.filter(e=>p.evidenceReviewed.includes(e.id)).map(e=>e.title).join(', ') + (p.twistRevealed?', '+c.twist.tag:'') : '')}
+    ${block('FIVE WHYS CHAIN', p.whys.map((w,i)=>w?('Why '+(i+1)+': '+w):'').filter(Boolean).join('\n'))}
+    ${block('ROOT CAUSE STATEMENT', p.rootCause)}
+    ${block('LEAN CONCEPT DRAWN', concept ? concept.name : '')}
+    ${block('PRESCRIBED FIX', p.fix)}
+    ${block('PREDICTED OUTCOME / ROI', p.roi)}
+    ${block('PITCH NOTES', p.pitchNotes)}
+    <div class="row" style="margin-top:10px;">
+      <button class="btn secondary" onclick="advanceTo('pitch')">← Edit pitch notes</button>
+      <button class="btn secondary" onclick="goto('landing')">Log out to switch user</button>
+    </div>
+  </div>`;
+}
+
+// Pull whatever is typed in the current step's boxes into the player record,
+// so Back buttons, logout and reloads never lose a draft.
+function captureDrafts(){
+  const p = state.player; if(!p) return;
+  const g = id => document.getElementById(id);
+  for(let i=0;i<5;i++){ const el = g('why'+i); if(el) p.whys[i] = el.value; }
+  const rc = g('rootCause'); if(rc) p.rootCause = rc.value;
+  const fx = g('fixText');   if(fx) p.fix = fx.value;
+  const ro = g('roiText');   if(ro) p.roi = ro.value;
+  const pn = g('pitchNotes'); if(pn) p.pitchNotes = pn.value;
+}
+let _draftTimer = null;
+document.addEventListener('input', e=>{
+  if(!state.player || !e.target || e.target.tagName !== 'TEXTAREA') return;
+  captureDrafts();
+  clearTimeout(_draftTimer);
+  _draftTimer = setTimeout(()=>{ if(state.player) savePlayer(); }, 800);
+});
+
+function advanceTo(view){
+  captureDrafts();
+  const stepMap = {'briefing':0,'evidence':1,'whys':2,'concept':3,'fix':4,'pitch':5,'summary':6};
+  if(stepMap[view] !== undefined){
+    state.player.step = stepMap[view];
+  }
+  savePlayer();
+  goto(view);
+}
+
+// ---------- PDF EXPORT ----------
+async function savePdf(doc, filename){
+  try{ doc.save(filename); }
+  catch(e){ showToast('Could not save the PDF.'); }
+}
+async function downloadSummaryPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'pt', format:'a4'});
+  const p = state.player;
+  const c = CASES[p.caseIndex];
+  const concept = CONCEPTS.find(x=>x.id===p.concept);
+  const margin = 48;
+  let y = margin;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const maxWidth = pageWidth - margin*2;
+
+  function addTitle(text, size){
+    doc.setFont('helvetica','bold'); doc.setFontSize(size||16);
+    doc.text(text, margin, y); y += size ? size*0.9 : 20;
+  }
+  function addLabel(text){
+    checkPage(20);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(120,90,40);
+    doc.text(text.toUpperCase(), margin, y); y+=14;
+    doc.setTextColor(20,20,20);
+  }
+  function addBody(text){
+    doc.setFont('courier','normal'); doc.setFontSize(10.5);
+    const lines = doc.splitTextToSize(text && text.trim() ? text : '(not completed)', maxWidth);
+    lines.forEach(line=>{
+      checkPage(14);
+      doc.text(line, margin, y); y+=14;
+    });
+    y+=8;
+  }
+  function checkPage(need){
+    if(y+need > doc.internal.pageSize.getHeight()-margin){ doc.addPage(); y = margin; }
+  }
+
+  addTitle('The Fifth Gate — Case Summary', 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(90,90,90);
+  doc.text('Detective: ' + (p.displayName||p.username), margin, y); y+=14;
+  doc.text('Case #' + (p.caseIndex+1) + ': ' + c.title + ' (' + c.industry + ')', margin, y); y+=14;
+  doc.text('Generated: ' + new Date().toLocaleString(), margin, y); y+=22;
+  doc.setTextColor(20,20,20);
+
+  addLabel('Case Briefing');
+  addBody(c.briefing + '\n\nMission: ' + c.mission);
+
+  addLabel('Evidence Reviewed (' + p.evidenceReviewed.length + '/8' + (p.twistRevealed?' + twist card':'') + ')');
+  const revList = c.evidence.filter(e=>p.evidenceReviewed.includes(e.id)).map(e=>'- ['+e.tag+'] '+e.title+': '+e.text).join('\n');
+  addBody(revList + (p.twistRevealed ? '\n- [TWIST] '+c.twist.text : ''));
+
+  addLabel('Five Whys Chain');
+  addBody(p.whys.map((w,i)=> w ? ('Why '+(i+1)+': '+w) : null).filter(Boolean).join('\n'));
+
+  addLabel('Root Cause Statement');
+  addBody(p.rootCause);
+
+  addLabel('Lean Concept Drawn');
+  addBody(concept ? concept.name + ' — ' + concept.blurb : '');
+
+  addLabel('Prescribed Fix');
+  addBody(p.fix);
+
+  addLabel('Predicted Outcome / ROI');
+  addBody(p.roi);
+
+  addLabel('Pitch Notes');
+  addBody(p.pitchNotes);
+
+  await savePdf(doc, '5-whys-case-summary-'+slug(p.displayName||p.username)+'.pdf');
+}
+
+async function downloadCohortPDF(){
+  showToast('Building cohort report…');
+  const keys = await storageListKeys('player:', true);
+  const players = [];
+  for(const k of keys){
+    const v = await storageGet(k, true);
+    if(v) players.push(v);
+  }
+  players.sort((a,b)=> (b.totalScore||0) - (a.totalScore||0) || a.username.localeCompare(b.username));
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'pt', format:'a4'});
+  const margin = 44;
+  let y = margin;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxWidth = pageWidth - margin*2;
+
+  function checkPage(need){
+    if(y+need > pageHeight-margin){ doc.addPage(); y = margin; return true; }
+    return false;
+  }
+  function heading(text,size){
+    checkPage((size||16)+6);
+    doc.setFont('helvetica','bold'); doc.setFontSize(size||16); doc.setTextColor(20,20,20);
+    doc.text(text, margin, y); y += (size||16)+6;
+  }
+  function subtext(text){
+    checkPage(14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(100,100,100);
+    doc.text(text, margin, y); y += 14;
+  }
+  function label(text){
+    checkPage(14);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(140,105,45);
+    doc.text(text.toUpperCase(), margin, y); y += 12;
+    doc.setTextColor(20,20,20);
+  }
+  function body(text){
+    doc.setFont('courier','normal'); doc.setFontSize(9.5); doc.setTextColor(20,20,20);
+    const lines = doc.splitTextToSize(text && text.trim() ? text : '(not completed)', maxWidth);
+    lines.forEach(line=>{ checkPage(12); doc.text(line, margin, y); y+=12; });
+    y += 6;
+  }
+
+  // Cover / leaderboard
+  heading('The Fifth Gate — Cohort Results Report', 18);
+  subtext('Generated: ' + new Date().toLocaleString());
+  subtext(players.length + ' detective(s) registered across ' + CASES.length + ' possible cases.');
+  y += 8;
+
+  heading('Leaderboard', 13);
+  const colX = {rank:margin, name:margin+34, caseNo:margin+210, concept:margin+300, score:pageWidth-margin-50};
+  checkPage(16);
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(100,100,100);
+  doc.text('#', colX.rank, y);
+  doc.text('Detective', colX.name, y);
+  doc.text('Case', colX.caseNo, y);
+  doc.text('Concept', colX.concept, y);
+  doc.text('Score', colX.score, y);
+  y += 6;
+  checkPage(4);
+  doc.setDrawColor(200,200,200);
+  doc.line(margin, y, pageWidth-margin, y);
+  y += 12;
+
+  players.forEach((p,i)=>{
+    checkPage(16);
+    const concept = CONCEPTS.find(x=>x.id===p.concept);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(20,20,20);
+    doc.text(String(i+1), colX.rank, y);
+    doc.text(String(p.displayName||p.username).slice(0,26), colX.name, y);
+    doc.text('#'+(p.caseIndex+1), colX.caseNo, y);
+    doc.text(concept ? concept.name.slice(0,22) : '—', colX.concept, y);
+    doc.text(p.totalScore!=null ? p.totalScore.toFixed(0) : '—', colX.score, y);
+    y += 15;
+  });
+
+  // Per-player detail pages
+  players.forEach(p=>{
+    doc.addPage(); y = margin;
+    const c = CASES[p.caseIndex];
+    const concept = CONCEPTS.find(x=>x.id===p.concept);
+    heading((p.displayName||p.username), 16);
+    subtext('Login: ' + p.username + '   ·   Case #' + (p.caseIndex+1) + ': ' + c.title + ' (' + c.industry + ')');
+    subtext('Status: ' + (p.completed ? 'Complete' : STEP_LABELS[Math.min(p.step, STEP_LABELS.length-1)]) + '   ·   First login: ' + (p.createdAt ? new Date(p.createdAt).toLocaleString() : '—') + '   ·   Last active: ' + (p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '—'));
+    y += 6;
+
+    label('Root cause statement (theirs)');
+    body(p.rootCause);
+    label('Suggested root cause (facilitator reference)');
+    body(c.facilitatorNotes.suggestedRootCause);
+    if(c.source){ label('Real case source'); body(c.source); }
+    label('Lean concept drawn');
+    body(concept ? concept.name + ' — ' + concept.blurb : '');
+    label('Prescribed fix');
+    body(p.fix);
+    label('Predicted outcome / ROI');
+    body(p.roi);
+
+    if(p.scores){
+      label('Scores');
+      body(
+        'Root cause accuracy (30%): ' + p.scores.rootCause + '\n' +
+        'Red herrings avoided (10%): ' + p.scores.herring + '\n' +
+        'Fit-to-concept reasoning (30%): ' + p.scores.fit + '\n' +
+        'Clarity of ROI (20%): ' + p.scores.roi + '\n' +
+        'Time discipline (10%): ' + p.scores.time + '\n' +
+        'WEIGHTED TOTAL: ' + p.totalScore.toFixed(1) + ' / 100'
+      );
+    } else {
+      label('Scores');
+      body('Not yet graded.');
+    }
+  });
+
+  await savePdf(doc, '5-whys-detective-cohort-report.pdf');
+}
+
+// ---------- FACILITATOR DASHBOARD ----------
+async function facilitatorDashboardView(){
+  setTimeout(()=>{
+    let t = null;
+    startLiveFeed(()=>{ clearTimeout(t); t = setTimeout(()=>{ if(state.view==='facilitator-dashboard' && document.getElementById('facRoot')) refreshFacilitator(); }, 250); });
+  }, 0);
+  return `<div id="facRoot">${await renderFacilitatorTable()}</div>`;
+}
+
+async function renderFacilitatorTable(){
+  const keys = await storageListKeys('player:', true);
+  const players = [];
+  for(const k of keys){
+    const v = await storageGet(k, true);
+    if(v) players.push(v);
+  }
+  players.sort((a,b)=> (b.totalScore||0) - (a.totalScore||0) || a.username.localeCompare(b.username));
+
+  const rows = players.map(p=>{
+    const stepLabel = p.completed ? 'Complete' : STEP_LABELS[Math.min(p.step, STEP_LABELS.length-1)];
+    const concept = CONCEPTS.find(x=>x.id===p.concept);
+    const isActive = p.updatedAt && (Date.now()-p.updatedAt) < 3*60*1000;
+    return `<tr>
+      <td>
+        <strong>${escapeHtml(p.displayName||p.username)}</strong>
+        <div class="muted small mono" style="margin-top:2px;">${escapeHtml(p.email||p.username)}</div>
+      </td>
+      <td>#${p.caseIndex+1} — ${escapeHtml(CASES[p.caseIndex].title)}</td>
+      <td><span class="badge-step">${escapeHtml(stepLabel)}</span></td>
+      <td>${concept ? escapeHtml(concept.name) : '<span class="muted">—</span>'}</td>
+      <td class="small">
+        <div>${fmtClock(p.createdAt)}</div>
+        <div class="muted" style="display:flex;align-items:center;gap:5px;">
+          <span style="width:7px;height:7px;border-radius:50%;display:inline-block;background:${isActive?'#5e8f6b':'#666'};"></span>
+          ${relTime(p.updatedAt)}
+        </div>
+      </td>
+      <td>${p.totalScore!=null ? '<span class="score-pill">'+p.totalScore.toFixed(0)+'</span>' : '<span class="muted">not graded</span>'}</td>
+      <td class="mono" style="text-align:center;" title="Times this detective's tab lost focus during the case">${p.tabSwitchCount||0}</td>
+      <td class="mono" style="text-align:center;" title="Total time this detective has spent with the case file panel open">${fmtTime(p.caseFileSeconds||0)}</td>
+      <td><button class="btn secondary" style="padding:6px 12px;font-size:13px;" onclick="openFacilitatorDetail('${p.username}')">View / Score</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" class="muted">No detectives have logged in yet.</td></tr>`;
+
+  return `
+  <div class="card">
+    <div class="flex-between">
+      <div>
+        <h2 style="margin:0;">Facilitator Dashboard</h2>
+        <p class="muted small" style="margin:4px 0 0;">${players.length} detective${players.length===1?'':'s'} registered across ${CASES.length} possible cases.</p>
+      </div>
+      <div class="row">
+        <span class="pillbtn mono" style="border-color:var(--good);color:var(--good);">● LIVE</span><button class="pillbtn" onclick="copyParticipantLink()">🔗 Copy participant link</button><button class="pillbtn" onclick="refreshFacilitator()">↻ Refresh</button>
+        <button class="btn" onclick="downloadCohortPDF()">⬇ Download cohort report (PDF)</button>
+      </div>
+    </div>
+    <hr class="dash">
+    <h3 style="margin:0 0 8px;font-size:15px;">Release the twist card for a specific case (all tables working that case, simultaneously)</h3>
+    <div class="row" style="flex-wrap:wrap;">
+      ${CASES.map((c,i)=>`<button class="pillbtn" onclick="releaseTwistForCase(${i})">Case #${i+1}</button>`).join('')}
+    </div>
+    <hr class="dash">
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Detective</th><th>Case</th><th>Progress</th><th>Concept drawn</th><th>Logged in / Last active</th><th>Score</th><th>Tab switches</th><th>Case file time</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+async function refreshFacilitator(){
+  const el = document.getElementById('facRoot');
+  if(el) el.innerHTML = await renderFacilitatorTable();
+}
+
+async function releaseTwistForCase(idx){
+  const ok = await storageSet('global_event_twist_'+idx, {released:true, at:Date.now()}, true);
+  showToast(ok ? 'Twist card released for Case #'+(idx+1)+' — all matching tables will see it within a few seconds.' : '⚠ Could not release twist card — try again.');
+}
+
+async function openFacilitatorDetail(username){
+  state.facilitatorDetailUser = username;
+  goto('facilitator-detail');
+}
+
+async function facilitatorDetailView(){
+  const p = await storageGet('player:'+state.facilitatorDetailUser, true);
+  if(!p) return `<div class="card">Detective not found. <button class="btn secondary" onclick="goto('facilitator-dashboard')">Back</button></div>`;
+  const c = CASES[p.caseIndex];
+  const concept = CONCEPTS.find(x=>x.id===p.concept);
+  const classification = p.evidenceClassification || {};
+  const reviewed = c.evidence.map(e=>{
+    const seen = p.evidenceReviewed.includes(e.id);
+    const isHerring = c.facilitatorNotes.herringIds.includes(e.id);
+    const guess = classification[e.id]; // 'relevant' | 'herring' | undefined
+    const guessedHerring = guess === 'herring';
+    const correct = guess ? (guessedHerring === isHerring) : null;
+    let guessTagHtml = '<span class="herring-tag no" style="opacity:.6;">not classified</span>';
+    if(guess){
+      const guessLabel = guessedHerring ? 'guessed: RED HERRING' : 'guessed: RELEVANT CLUE';
+      const resultCls = correct ? 'no' : 'yes'; // reuse styles: 'no'=green(good), 'yes'=red(bad) per existing herring-tag palette
+      guessTagHtml = `<span class="herring-tag ${resultCls}">${guessLabel} ${correct?'✓':'✗'}</span>`;
+    }
+    return `<div class="summary-block" style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+        <strong style="font-size:13.5px;">${seen?'✓':'—'} [${escapeHtml(e.tag)}] ${escapeHtml(e.title)}</strong>
+        <span>
+          <span class="herring-tag ${isHerring?'yes':'no'}">${isHerring?'RED HERRING':'RELEVANT CLUE'}</span>
+          ${guessTagHtml}
+        </span>
+      </div>
+      <div class="small muted" style="margin-top:4px;">${escapeHtml(e.text)}</div>
+    </div>`;
+  }).join('');
+
+  const scores = p.scores || {rootCause:70, herring:70, fit:70, roi:70, time:70};
+  const block = (title, content) => `<div class="summary-block"><h3>${title}</h3><div class="content ${content?'':'empty'}">${escapeHtml(content) || 'Not completed'}</div></div>`;
+
+  return `
+  <div class="card">
+    <button class="pillbtn" onclick="goto('facilitator-dashboard')">← All detectives</button>
+    <div class="flex-between" style="margin-top:14px;">
+      <div>
+        <span class="stamp-tag">CASE #${p.caseIndex+1}</span>
+        <h2 style="margin:10px 0 0;">${escapeHtml(p.displayName||p.username)}</h2>
+        <p class="muted small mono">${escapeHtml(p.email||p.username)}</p>
+        <p class="muted small">${escapeHtml(c.title)} · ${escapeHtml(c.industry)} · Progress: ${p.completed?'Complete':STEP_LABELS[Math.min(p.step,STEP_LABELS.length-1)]}</p>
+        <p class="muted small">First logged in: ${fmtClock(p.createdAt)} on ${p.createdAt?new Date(p.createdAt).toLocaleDateString():'—'} · Last active: ${relTime(p.updatedAt)}</p>
+        <p class="muted small">🔀 Tab switches during case: <strong style="color:var(--text);">${p.tabSwitchCount||0}</strong></p>
+        <p class="muted small">📖 Case file re-opened for: <strong style="color:var(--text);">${fmtTime(p.caseFileSeconds||0)}</strong></p>
+      </div>
+    </div>
+    <hr class="dash">
+    <h3 style="font-size:14px;color:var(--gold);font-family:'Courier Prime',monospace;">EVIDENCE — WITH ANSWER KEY</h3>
+    ${reviewed}
+    ${p.twistRevealed ? `<div class="summary-block"><strong class="small">✓ [TWIST] ${escapeHtml(c.twist.tag)}</strong><div class="small muted" style="margin-top:4px;">${escapeHtml(c.twist.text)}</div></div>` : `<p class="small muted">Twist card not yet revealed for this detective.</p>`}
+    <hr class="dash">
+    ${block('FIVE WHYS CHAIN', p.whys.map((w,i)=>w?('Why '+(i+1)+': '+w):'').filter(Boolean).join('\n'))}
+    ${block('ROOT CAUSE STATEMENT (theirs)', p.rootCause)}
+    <div class="summary-block">
+      <h3>SUGGESTED ROOT CAUSE (facilitator reference)</h3>
+      <div class="content">${escapeHtml(c.facilitatorNotes.suggestedRootCause)}</div>
+      ${c.source ? `<div class="content" style="margin-top:8px;opacity:.75;font-size:12.5px;">Real case source: ${escapeHtml(c.source)}</div>` : ''}
+    </div>
+    ${block('LEAN CONCEPT DRAWN', concept ? concept.name + ' — ' + concept.blurb : '')}
+    ${block('PRESCRIBED FIX', p.fix)}
+    ${block('PREDICTED OUTCOME / ROI', p.roi)}
+    ${block('PITCH NOTES', p.pitchNotes)}
+    <hr class="dash">
+    <h3 style="font-size:14px;color:var(--gold);font-family:'Courier Prime',monospace;">SCORE THIS CASE</h3>
+    <div class="rubric-grid">
+      ${rubricRow('rootCause','Root cause accuracy (30%)', scores.rootCause)}
+      ${rubricRow('herring','Red herrings avoided (10%)', scores.herring)}
+      ${rubricRow('fit','Fit-to-concept reasoning (30%)', scores.fit)}
+      ${rubricRow('roi','Clarity of ROI (20%)', scores.roi)}
+      ${rubricRow('time','Time discipline (10%)', scores.time)}
+    </div>
+    <div class="row" style="margin-top:16px;">
+      <button class="btn" onclick="saveFacilitatorScore('${p.username}')">Save score</button>
+      <span id="totalPreview" class="muted small"></span>
+    </div>
+  </div>`;
+}
+
+function rubricRow(key,label,val){
+  return `<div class="rubric-item">
+    <label><span>${label}</span><span id="${key}Val" class="mono">${val}</span></label>
+    <input type="range" min="0" max="100" step="5" value="${val}" id="${key}Range" oninput="document.getElementById('${key}Val').textContent=this.value; updateTotalPreview();">
+  </div>`;
+}
+
+function updateTotalPreview(){
+  const g = id => Number(document.getElementById(id).value);
+  const total = g('rootCauseRange')*0.3 + g('herringRange')*0.1 + g('fitRange')*0.3 + g('roiRange')*0.2 + g('timeRange')*0.1;
+  const el = document.getElementById('totalPreview');
+  if(el) el.textContent = 'Weighted total: ' + total.toFixed(1) + ' / 100';
+}
+
+async function saveFacilitatorScore(username){
+  const g = id => Number(document.getElementById(id).value);
+  const scores = {rootCause:g('rootCauseRange'), herring:g('herringRange'), fit:g('fitRange'), roi:g('roiRange'), time:g('timeRange')};
+  const total = scores.rootCause*0.3 + scores.herring*0.1 + scores.fit*0.3 + scores.roi*0.2 + scores.time*0.1;
+  const ok = await storageUpdate('player:'+username, {scores, totalScore: total});
+  showToast(ok ? 'Score saved: '+total.toFixed(1)+' / 100' : '⚠ Score did not save — try again.');
+}
+
+function showToast(msg){
+  const existing = document.querySelector('.toast');
+  if(existing) existing.remove();
+  const t = document.createElement('div');
+  t.className='toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3200);
+}
+
+function attachHandlers(){
+  const nameInput = document.getElementById('loginName');
+  if(nameInput){ nameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') doParticipantLogin(); }); }
+  const pwInput = document.getElementById('facPw');
+  if(pwInput){ pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') doFacilitatorLogin(); }); }
+  if(state.view === 'facilitator-detail') updateTotalPreview();
+}
+
+// ---------- TAB SWITCH TRACKING ----------
+// Counts every time the participant navigates away from this tab/window (switches tabs,
+// switches apps, minimizes) while a case is in progress, and surfaces it to both dashboards.
+const TAB_SWITCH_PENALTY_SECONDS = 15;
+// Takes 15 seconds off whichever countdown is running (Briefing, Evidence Room or Pitch Prep).
+// Returns true if a countdown was actually reduced.
+function applyTabSwitchPenalty(){
+  if(!state.timerHandle || !state.timerEndAt) return false;
+  state.timerEndAt -= TAB_SWITCH_PENALTY_SECONDS*1000;
+  // The Evidence Room clock is measured from when the player entered the room, so move that back
+  // too — keeps the 8-minute twist mark and any later re-entry in step with the reduced clock.
+  if(state.timerLabel === 'Evidence Investigation' && state.player && state.player.evidenceStartedAt){
+    state.player.evidenceStartedAt -= TAB_SWITCH_PENALTY_SECONDS*1000;
+  }
+  state.timerSeconds = Math.max(0, Math.round((state.timerEndAt - Date.now())/1000));
+  return true;
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    if(state.role === 'participant' && state.player){
+      state.player.tabSwitchCount = (state.player.tabSwitchCount || 0) + 1;
+      if(applyTabSwitchPenalty()) state.tabPenaltyPending = true;
+      savePlayer();
+    }
+  } else {
+    if(state.role === 'participant' && state.player){
+      if(state.timerHandle && state.timerEndAt){
+        state.timerSeconds = Math.max(0, Math.round((state.timerEndAt - Date.now())/1000));   // catch up after background throttling
+      }
+      render();   // refresh the on-screen counter once they return
+      if(state.tabPenaltyPending){
+        state.tabPenaltyPending = false;
+        showToast('⚠ Tab switch — '+TAB_SWITCH_PENALTY_SECONDS+' seconds taken off the clock');
+      }
+    }
+  }
+});
+
+// ---------- BOOT ----------
+getDb();   // start connecting to the db now so sign-in isn't the first thing to wait for
+render();
+</script>
+<div id="syncBadge" style="position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:50;font:12px 'Courier Prime',monospace;padding:5px 10px;border-radius:14px;background:#241a10;border:1px solid #4a3820;color:#a89478;"></div>
+<script>
+(function(){
+  var b=document.getElementById('syncBadge');
+  if(LIVE_MODE){ b.textContent='● Live sync on (GitHub)'; b.style.color='#5f7a45'; b.style.borderColor='#5f7a45'; }
+  else if(GH_OWNER && GH_REPO){ b.textContent='○ No access key — open the link your facilitator shared'; b.style.color='#e08a76'; b.style.borderColor='#8a1f1f'; }
+  else { b.textContent='○ Local mode — set GH_OWNER / GH_REPO for live multi-device sync'; b.style.color='#e08a76'; b.style.borderColor='#8a1f1f'; }
+})();
+</script>
+</body>
+</html>
