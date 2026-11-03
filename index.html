@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Case File: The Fifth Gate</title>
+<title>Case File: 5 warriors who asked why</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script>
 /* Load web fonts without blocking first paint (system fonts show instantly, then swap). */
@@ -312,8 +312,8 @@ const FACILITATOR_PASSWORD = "Case5Whys!26"; // change this to reset the facilit
    4. Host this file with GitHub Pages (public repo -> Settings -> Pages -> main / root).
    Until GH_OWNER/GH_REPO/key are set the app runs in LOCAL MODE (tabs of one browser only).
    ========================================================= */
-const GH_OWNER  = "fifth-gate-team";            // your GitHub username or org
-const GH_REPO   = "fifth-gate-data";            // the (private) data repo
+const GH_OWNER  = "";            // your GitHub username or org
+const GH_REPO   = "";            // the (private) data repo
 const GH_BRANCH = "main";
 const GH_TOKEN  = "";            // optional; leave empty and use the #k= link instead
 const EVENT_ID  = "fifth-gate-1"; // change to start a fresh empty board
@@ -1091,7 +1091,7 @@ function topbarHtml(){
       <div class="badge">5W</div>
       <div class="brand-text">
         <div class="k mono">CASE FILE</div>
-        <h1>The Fifth Gate</h1>
+        <h1>5 warriors who asked why</h1>
       </div>
     </div>
     ${right}
@@ -1813,7 +1813,7 @@ async function downloadSummaryPDF(){
     if(y+need > doc.internal.pageSize.getHeight()-margin){ doc.addPage(); y = margin; }
   }
 
-  addTitle('The Fifth Gate — Case Summary', 18);
+  addTitle('5 warriors who asked why — Case Summary', 18);
   doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(90,90,90);
   doc.text('Team / Detective: ' + (p.displayName||p.username) + (p.email ? '  <' + p.email + '>' : ''), margin, y); y+=14;
   doc.text('Case #' + (p.caseIndex+1) + ': ' + c.title + ' (' + c.industry + ')', margin, y); y+=14;
@@ -1900,7 +1900,7 @@ async function downloadCohortPDF(){
   }
 
   // Cover / leaderboard
-  heading('The Fifth Gate — Cohort Results Report', 18);
+  heading('5 warriors who asked why — Cohort Results Report', 18);
   subtext('Generated: ' + new Date().toLocaleString());
   subtext(players.length + ' detective(s) registered across ' + CASES.length + ' possible cases.');
   y += 8;
