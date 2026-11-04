@@ -312,8 +312,8 @@ const FACILITATOR_PASSWORD = "Case5Whys!26"; // change this to reset the facilit
    4. Host this file with GitHub Pages (public repo -> Settings -> Pages -> main / root).
    Until GH_OWNER/GH_REPO/key are set the app runs in LOCAL MODE (tabs of one browser only).
    ========================================================= */
-const GH_OWNER  = "fifth-gate-team";            // your GitHub username or org
-const GH_REPO   = "fifth-gate-data";            // the (private) data repo
+const GH_OWNER  = "";            // your GitHub username or org
+const GH_REPO   = "";            // the (private) data repo
 const GH_BRANCH = "main";
 const GH_TOKEN  = "";            // optional; leave empty and use the #k= link instead
 const EVENT_ID  = "fifth-gate-1"; // change to start a fresh empty board
@@ -763,11 +763,11 @@ let state = {
   twistCheckedThisEvidence: false,
   evidenceTimerActive: false, // true once the Evidence Investigation timer has been started for this room visit — prevents opening/classifying a folder from resetting the countdown
   drawingConcept: false,      // guards against a double-fire on the concept draw
-  overallTimerHandle: null    // separate interval for the persistent 45-min event clock; not touched by stopTimer()
+  overallTimerHandle: null    // separate interval for the persistent 15-min event clock; not touched by stopTimer()
 };
 
 const STEP_LABELS = ["Briefing","Evidence","5 Whys","Concept","Fix","Pitch","Summary"];
-const OVERALL_EVENT_SECONDS = 45 * 60; // total event budget shown in the topbar clock
+const OVERALL_EVENT_SECONDS = 15 * 60; // total event budget shown in the topbar clock
 const EVIDENCE_ROOM_SECONDS = 10 * 60; // Evidence Investigation countdown
 const TWIST_RELEASE_AT_SECONDS = 8 * 60; // 9th evidence auto-surfaces this many seconds INTO the evidence room
 
@@ -1066,6 +1066,10 @@ function stopPoll(){
 // ---------- RENDER ROOT ----------
 async function render(){
   const app = document.getElementById('app');
+  if(state.role === 'participant' && state.player){
+    applyTimeUp();
+    if(state.player.timedOut && ['briefing','evidence','whys','concept','fix','pitch'].indexOf(state.view) !== -1) state.view = 'summary';
+  }
   const body = await bodyHtml();
   app.innerHTML = topbarHtml() + body;
   attachHandlers();
@@ -1077,10 +1081,10 @@ function topbarHtml(){
   if(state.role === 'participant' && state.player){
     const showClock = !state.player.completed && state.view !== 'landing' && state.view !== 'participant-login';
     right = `<div class="row">
-      ${showClock ? `<span class="pillbtn mono" id="overallTimer" title="Total budget for the whole case: 45 minutes">Event: 45:00 / 45:00</span>` : ''}
+      ${showClock ? `<span class="pillbtn mono" id="overallTimer" title="Total budget for the whole case: 15 minutes">Event: 15:00 / 15:00</span>` : ''}
       <span class="pillbtn mono" title="Times this tab lost focus (switched away) during the case">🔀 Tab switches: ${state.player.tabSwitchCount||0}</span>
       <span class="pillbtn mono">🕵️ ${escapeHtml(state.player.displayName||state.player.username)}</span>
-      ${!state.player.completed && state.view !== 'landing' ? `<button class="pillbtn" id="restartBtn" onclick="restartCase(this)" title="Wipe this case file and start again with fresh clocks">↺ Restart case</button>` : ''}
+      ${!state.player.completed && !state.player.timedOut && state.view !== 'landing' ? `<button class="pillbtn" id="restartBtn" onclick="restartCase(this)" title="Wipe this case file and start again with fresh clocks">↺ Restart case</button>` : ''}
       <button class="pillbtn" onclick="logout()">Switch user</button>
     </div>`;
   } else if(state.role === 'facilitator'){
@@ -1244,6 +1248,7 @@ async function doFacilitatorLogin(){
 
 let _restartArmed = 0;
 function restartCase(btn){
+  if(state.player && state.player.timedOut) return;
   // two-step confirm without confirm() (dialogs can be blocked inside hosted pages)
   if(Date.now() - _restartArmed > 4000){
     _restartArmed = Date.now();
@@ -1282,7 +1287,7 @@ function goto(view){
   window.scrollTo(0,0);
 }
 
-// ---------- OVERALL EVENT CLOCK (45 min, persistent across all steps) ----------
+// ---------- OVERALL EVENT CLOCK (15 min, persistent across all steps) ----------
 // Runs on its own interval handle, separate from the per-step timer, so
 // navigating between steps (which calls stopTimer()) never pauses it.
 function stopOverallTimer(){
@@ -1293,14 +1298,42 @@ function paintOverallTimer(){
   if(!el || !state.player || !state.player.createdAt) return;
   const elapsed = Math.floor((Date.now() - state.player.createdAt)/1000);
   const remaining = OVERALL_EVENT_SECONDS - elapsed;
-  el.textContent = 'Event: ' + (remaining >= 0 ? fmtTime(remaining) : '00:00') + ' / 45:00';
+  el.textContent = 'Event: ' + (remaining >= 0 ? fmtTime(remaining) : '00:00') + ' / 15:00';
   el.classList.toggle('low', remaining <= 300);
+}
+// When the 15 minutes are over the case is submitted automatically and the page is locked
+// to the summary, where the only available action is downloading the PDF.
+function isTimeUp(p){
+  return !!p && (p.timedOut || (p.createdAt && (Date.now() - p.createdAt)/1000 >= OVERALL_EVENT_SECONDS));
+}
+function applyTimeUp(){
+  const p = state.player;
+  if(!p || p.timedOut || !isTimeUp(p)) return false;
+  captureDrafts();
+  flushCaseFileTime();
+  stopTimer(); stopPoll(); stopCaseFileClock();
+  state.caseOpen = false; state.caseFileOpenedAt = null;
+  p.completed = true;
+  p.timedOut = true;
+  p.submittedAt = Date.now();
+  p.step = STEP_LABELS.length - 1;
+  state.view = 'summary';
+  savePlayer(true);
+  return true;
+}
+function overallTick(){
+  paintOverallTimer();
+  if(state.role === 'participant' && state.player && applyTimeUp()){
+    stopOverallTimer();
+    render();
+    showToast("Time's up — your case has been submitted. Download your PDF summary.");
+  }
 }
 function startOverallTimerIfNeeded(){
   if(!state.player || !state.player.createdAt) return;
-  paintOverallTimer();                       // never leave the "45:00" placeholder showing after a redraw
+  paintOverallTimer();                       // never leave the "15:00" placeholder showing after a redraw
   if(state.overallTimerHandle) return;
-  state.overallTimerHandle = setInterval(paintOverallTimer, 1000);
+  state.overallTimerHandle = setInterval(overallTick, 1000);
 }
 
 // ---------- CASE FILE (mission, key facts, process, glossary) ----------
@@ -1724,7 +1757,7 @@ function summaryView(){
   <div class="card">
     <div class="flex-between">
       <div>
-        <span class="stamp-tag">CASE CLOSED</span>
+        <span class="stamp-tag">${p.timedOut ? "TIME'S UP — SUBMITTED" : 'CASE CLOSED'}</span>
         <h2 style="margin:10px 0 0;">${escapeHtml(p.displayName||p.username)}'s Case File</h2>
         <p class="muted small">Case #${p.caseIndex+1}: ${escapeHtml(c.title)} · ${escapeHtml(c.industry)}</p>
       </div>
@@ -1738,10 +1771,10 @@ function summaryView(){
     ${block('PRESCRIBED FIX', p.fix)}
     ${block('PREDICTED OUTCOME / ROI', p.roi)}
     ${block('TEAM PITCH (WRITTEN)', p.pitchNotes)}
-    <div class="row" style="margin-top:10px;">
+    ${p.timedOut ? `<p class="muted small" style="margin-top:14px;">The 15 minutes are over, so your case has been submitted and can no longer be edited. Use the button at the top to download your PDF summary.</p>` : `<div class="row" style="margin-top:10px;">
       <button class="btn secondary" onclick="advanceTo('pitch')">← Edit pitch</button>
       <button class="btn secondary" onclick="goto('landing')">Log out to switch user</button>
-    </div>
+    </div>`}
   </div>`;
 }
 
@@ -1758,13 +1791,14 @@ function captureDrafts(){
 }
 let _draftTimer = null;
 document.addEventListener('input', e=>{
-  if(!state.player || !e.target || e.target.tagName !== 'TEXTAREA') return;
+  if(!state.player || state.player.timedOut || !e.target || e.target.tagName !== 'TEXTAREA') return;
   captureDrafts();
   clearTimeout(_draftTimer);
   _draftTimer = setTimeout(()=>{ if(state.player) savePlayer(); }, 800);
 });
 
 function advanceTo(view){
+  if(state.player && state.player.timedOut && view !== 'summary') return;
   captureDrafts();
   const stepMap = {'briefing':0,'evidence':1,'whys':2,'concept':3,'fix':4,'pitch':5,'summary':6};
   if(stepMap[view] !== undefined){
@@ -2197,7 +2231,7 @@ function applyTabSwitchPenalty(){
 }
 document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
-    if(state.role === 'participant' && state.player){
+    if(state.role === 'participant' && state.player && !state.player.timedOut){
       state.player.tabSwitchCount = (state.player.tabSwitchCount || 0) + 1;
       if(applyTabSwitchPenalty()) state.tabPenaltyPending = true;
       savePlayer();
